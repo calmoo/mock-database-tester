@@ -1,0 +1,75 @@
+Task
+
+You are going to simulate stress on the ScyllaDB database and analyze the stress results.
+
+The exercise consists of two parts:
+
+    Simulating a stress
+
+    Running the stress simulation process and analyzing results
+
+
+Stress process
+
+Instead of stressing a real Scylla database the process will simulate latency and throughput results, randomly generating the values and printing them (to stdout).
+
+
+Requirements:
+
+    The process should get a stress time as a parameter in its command-line interface
+    stress_duration: how long the stress will be applied
+
+    The process should output the results as a table each second during the stress time
+
+    The process should output following random values as a table:
+
+    Throughput - values in range of [0, 100,000], measured in operations/s
+
+    Latency - values in a range of [0, 20000], measured in milliseconds
+
+
+Analysis and runner process
+
+The Analysis process will run concurrently N stress sub-processes while each one of them will run in a separate thread.
+The analysis program should parse stdout of each of the stress processes and print a summary (format is defined below).
+
+
+Requirements:
+
+    Number of concurrent stress processes to run will be received as a command line argument
+
+    Each stress process runtime duration should be different
+
+    Analyzer should include following in the summary
+
+    Number of stress processes that ran
+
+    Start/end time of each stress process and its duration
+
+     For each throughput and latency, calculate following stats (across all stress processes)
+
+    Average
+
+    Min
+
+    Max
+
+    95th percentile
+
+Project structure
+
+    stress.py
+
+    analyze.py
+
+Guidelines:
+
+    Write object-oriented code
+
+    Use argparse/doctopt to parse command line arguments
+
+    For statistics calculations use only standard lib functions
+
+    Bonus: The code should be production grade
+
+
