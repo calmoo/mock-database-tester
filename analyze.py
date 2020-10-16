@@ -4,7 +4,7 @@ import random
 arr2 = []
 
 
-def stress_test(duration: int, d: dict) -> str:
+def stress_test(duration: int, d: dict) -> None:
     """
     Modifications to mutable values or items in dict and list proxies will not
     be propagated through the manager, because the proxy has no way of knowing
@@ -20,7 +20,6 @@ def stress_test(duration: int, d: dict) -> str:
     latency_values = stress_test_output[1::2]
     d["throughput"].extend(throughput_values)
     d["latency"].extend(latency_values)
-    return throughput_values, latency_values
 
 if __name__ == '__main__':
     def run_processes_in_parallel(function, num_threads):
