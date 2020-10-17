@@ -9,6 +9,19 @@ from typing import Callable, Dict, List
 import csv
 import io
 
+
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
+
 parser = argparse.ArgumentParser(
     description="Spawn multiple stress processes for ScyllaDB and get metrics"
 )
@@ -149,8 +162,8 @@ class CLILineCreator:
         average_throughput = self._metrics_calculator.average_throughput()
         average_latency = self._metrics_calculator.average_latency()
         output_string = (
-            f"Average Throughput = {average_throughput} ops/s\n"
-            f"Average Latency = {average_latency}ms"
+            f"Average Throughput = {bcolors.OKGREEN}{average_throughput} ops/s {bcolors.ENDC}\n"
+            f"Average Latency = {bcolors.OKGREEN}{average_latency}ms{bcolors.ENDC}"
         )
         return output_string
 
@@ -158,8 +171,8 @@ class CLILineCreator:
         max_throughput = self._metrics_calculator.max_throughput()
         max_latency = self._metrics_calculator.max_latency()
         output_string = (
-            f"Max throughput = {max_throughput} ops/s\n"
-            f"Max latency = {max_latency}ms"
+            f"Max throughput = {bcolors.OKGREEN}{max_throughput} ops/s{bcolors.ENDC}\n"
+            f"Max latency = {bcolors.OKGREEN}{max_latency}ms{bcolors.ENDC}"
         )
         return output_string
 
@@ -167,8 +180,8 @@ class CLILineCreator:
         min_throughput = self._metrics_calculator.min_throughput()
         min_latency = self._metrics_calculator.min_latency()
         output_string = (
-            f"Min throughput = {min_throughput} ops/s\n"
-            f"Min latency = {min_latency}ms"
+            f"Min throughput = {bcolors.OKGREEN}{min_throughput} ops/s{bcolors.ENDC}\n"
+            f"Min latency = {bcolors.OKGREEN}{min_latency}ms{bcolors.ENDC}"
         )
         return output_string
 
@@ -180,8 +193,8 @@ class CLILineCreator:
             self._metrics_calculator.ninety_fifth_percentile_latency()
         )
         output_string = (
-            f"Throughput 95th percentile = {percentile_throughput} ops/s\n"
-            f"Latency 95th percentile = {percentile_latency}ms"
+            f"Throughput 95th percentile = {bcolors.OKGREEN}{percentile_throughput} ops/s{bcolors.ENDC}\n"
+            f"Latency 95th percentile = {bcolors.OKGREEN}{percentile_latency}ms{bcolors.ENDC}"
         )
 
         return output_string
@@ -201,7 +214,7 @@ class CLILineCreator:
             total_time = item["total_time"]
             info_str = (f"pid: {pid} started at {start_time}"
                         f" and finished at {end_time}"
-                        f" taking {total_time} seconds to complete\n"
+                        f" taking  {total_time} seconds to complete\n"
                         )
             output_string += info_str
         return output_string
