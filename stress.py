@@ -1,4 +1,3 @@
-from typing import TextIO
 import sys
 import time
 import random
