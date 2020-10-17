@@ -1,5 +1,4 @@
-- Fix random sampling
-- Add CLI to analyze.py
 - Pytest coverage
 - Testing for all functionality
 - Comments everywhere
+- 

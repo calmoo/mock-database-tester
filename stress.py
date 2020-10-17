@@ -6,8 +6,13 @@ import argparse
 import csv
 
 parser = argparse.ArgumentParser(description="Simulate stress on ScyllaDB")
-parser.add_argument("duration", help="Duration of stress process", type=int)
+parser.add_argument("duration", help="Duration of stress process (integer)", type=int)
 args = parser.parse_args()
+
+if args.duration <= 0:
+    parser.error(
+        "Duration must be greater than 0"
+    )
 
 
 def simulate_stress(stress_duration: int) -> None:
