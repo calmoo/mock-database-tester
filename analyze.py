@@ -11,15 +11,15 @@ import io
 
 
 class bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKCYAN = '\033[96m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
+    HEADER = "\033[95m"
+    OKBLUE = "\033[94m"
+    OKCYAN = "\033[96m"
+    OKGREEN = "\033[92m"
+    WARNING = "\033[93m"
+    FAIL = "\033[91m"
+    ENDC = "\033[0m"
+    BOLD = "\033[1m"
+    UNDERLINE = "\033[4m"
 
 
 parser = argparse.ArgumentParser(
@@ -28,7 +28,7 @@ parser = argparse.ArgumentParser(
 parser.add_argument(
     "threads",
     help="Number of processes to spawn (integer), must be less than or equal"
-         " to max duration value to ensure unique randomness values.",
+    " to max duration value to ensure unique randomness values.",
     type=int,
 )
 parser.add_argument(
@@ -48,11 +48,11 @@ def stress_test(duration: int, shared_dict: dict) -> None:
 
     start_time = time.time()
 
-    stress_test = subprocess.Popen(
+    stress_test_process = subprocess.Popen(
         ["python", "stress.py", str(duration)],
         stdout=subprocess.PIPE,
     )
-    output_bytes = stress_test.communicate()[0]
+    output_bytes = stress_test_process.communicate()[0]
     output_string = output_bytes.decode()
     output_file = io.StringIO(output_string)
     csv_reader = csv.DictReader(output_file)
@@ -63,8 +63,12 @@ def stress_test(duration: int, shared_dict: dict) -> None:
     total_time = end_time - start_time
     start_time_str = datetime.datetime.fromtimestamp(start_time).strftime("%c")
     end_time_str = datetime.datetime.fromtimestamp(end_time).strftime("%c")
-    process_stats = {"pid": stress_test.pid, "start_time": start_time_str,
-                     "end_time": end_time_str, "total_time": total_time}
+    process_stats = {
+        "pid": stress_test_process.pid,
+        "start_time": start_time_str,
+        "end_time": end_time_str,
+        "total_time": total_time,
+    }
     shared_dict["throughput"].extend(throughput_values_int)
     shared_dict["latency"].extend(latency_values_int)
     shared_dict["execution_stats"].append(process_stats)
@@ -93,8 +97,10 @@ def run_processes_in_parallel(
 
 class CalculateMetrics:
     def __init__(
-        self, throughput_metrics: List[int], latency_metrics: List[int],
-            execution_metrics: List[Dict]
+        self,
+        throughput_metrics: List[int],
+        latency_metrics: List[int],
+        execution_metrics: List[Dict],
     ):
         self.throughput_metrics = throughput_metrics
         self.latency_metrics = latency_metrics
@@ -147,14 +153,17 @@ class CalculateMetrics:
         return self.execution_metrics
 
 
-
-
 class CLILineCreator:
-    def __init__(self, throughput_metrics: list, latency_metrics: list, execution_metrics: list):
+    def __init__(
+        self,
+        throughput_metrics: list,
+        latency_metrics: list,
+        execution_metrics: list,
+    ):
         self._metrics_calculator = CalculateMetrics(
             throughput_metrics=throughput_metrics,
             latency_metrics=latency_metrics,
-            execution_metrics=execution_metrics
+            execution_metrics=execution_metrics,
         )
         self.execution_metrics = execution_metrics
 
@@ -162,8 +171,10 @@ class CLILineCreator:
         average_throughput = self._metrics_calculator.average_throughput()
         average_latency = self._metrics_calculator.average_latency()
         output_string = (
-            f"Average Throughput = {bcolors.OKGREEN}{average_throughput} ops/s {bcolors.ENDC}\n"
-            f"Average Latency = {bcolors.OKGREEN}{average_latency}ms{bcolors.ENDC}"
+            f"Average Throughput = "
+            f"{bcolors.OKGREEN}{average_throughput} ops/s {bcolors.ENDC}\n"
+            f"Average Latency = "
+            f"{bcolors.OKGREEN}{average_latency}ms{bcolors.ENDC}"
         )
         return output_string
 
@@ -171,7 +182,8 @@ class CLILineCreator:
         max_throughput = self._metrics_calculator.max_throughput()
         max_latency = self._metrics_calculator.max_latency()
         output_string = (
-            f"Max throughput = {bcolors.OKGREEN}{max_throughput} ops/s{bcolors.ENDC}\n"
+            f"Max throughput = "
+            f"{bcolors.OKGREEN}{max_throughput} ops/s{bcolors.ENDC}\n"
             f"Max latency = {bcolors.OKGREEN}{max_latency}ms{bcolors.ENDC}"
         )
         return output_string
@@ -180,8 +192,10 @@ class CLILineCreator:
         min_throughput = self._metrics_calculator.min_throughput()
         min_latency = self._metrics_calculator.min_latency()
         output_string = (
-            f"Min throughput = {bcolors.OKGREEN}{min_throughput} ops/s{bcolors.ENDC}\n"
-            f"Min latency = {bcolors.OKGREEN}{min_latency}ms{bcolors.ENDC}"
+            f"Min throughput = "
+            f"{bcolors.OKGREEN}{min_throughput} ops/s{bcolors.ENDC}\n"
+            f"Min latency = "
+            f"{bcolors.OKGREEN}{min_latency}ms{bcolors.ENDC}"
         )
         return output_string
 
@@ -193,14 +207,18 @@ class CLILineCreator:
             self._metrics_calculator.ninety_fifth_percentile_latency()
         )
         output_string = (
-            f"Throughput 95th percentile = {bcolors.OKGREEN}{percentile_throughput} ops/s{bcolors.ENDC}\n"
-            f"Latency 95th percentile = {bcolors.OKGREEN}{percentile_latency}ms{bcolors.ENDC}"
+            f"Throughput 95th percentile = "
+            f"{bcolors.OKGREEN}{percentile_throughput} ops/s{bcolors.ENDC}\n"
+            f"Latency 95th percentile = "
+            f"{bcolors.OKGREEN}{percentile_latency}ms{bcolors.ENDC}"
         )
 
         return output_string
 
     def no_processes_run(self) -> str:
-        number_of_processes = self._metrics_calculator.number_of_processes_run()
+        number_of_processes = (
+            self._metrics_calculator.number_of_processes_run()
+        )
         output_string = f"{number_of_processes} processes run in total"
         return output_string
 
@@ -212,12 +230,45 @@ class CLILineCreator:
             start_time = item["start_time"]
             end_time = item["end_time"]
             total_time = item["total_time"]
-            info_str = (f"pid: {pid} started at {start_time}"
-                        f" and finished at {end_time}"
-                        f" taking  {total_time} seconds to complete\n"
-                        )
+            info_str = (
+                f"pid: {pid} started at {start_time}"
+                f" and finished at {end_time}"
+                f" taking  {total_time} seconds to complete\n"
+            )
             output_string += info_str
         return output_string
+
+
+class CLIPrinter:
+    def __init__(
+        self,
+        throughput_metrics: list,
+        latency_metrics: list,
+        execution_metrics: list,
+    ):
+        self._cli_line_creator = CLILineCreator(
+            throughput_metrics=throughput_metrics,
+            latency_metrics=latency_metrics,
+            execution_metrics=execution_metrics,
+        )
+
+    def average(self) -> None:
+        print(self._cli_line_creator.average())
+
+    def max(self) -> None:
+        print(self._cli_line_creator.max())
+
+    def min(self) -> None:
+        print(self._cli_line_creator.min())
+
+    def percentile(self) -> None:
+        print(self._cli_line_creator.percentile())
+
+    def no_processes_run(self) -> None:
+        print(self._cli_line_creator.no_processes_run())
+
+    def execution_info_each_process(self) -> None:
+        print(self._cli_line_creator.execution_info_each_process())
 
 
 if __name__ == "__main__":
@@ -231,14 +282,15 @@ if __name__ == "__main__":
     latency = output_data["latency"][:]
     execution_metrics = output_data["execution_stats"][:]
 
-    calculator = CLILineCreator(
-        throughput_metrics=throughput, latency_metrics=latency,
-        execution_metrics=execution_metrics
+    printer = CLIPrinter(
+        throughput_metrics=throughput,
+        latency_metrics=latency,
+        execution_metrics=execution_metrics,
     )
 
-    print(calculator.average())
-    print(calculator.max())
-    print(calculator.min())
-    print(calculator.percentile())
-    print(calculator.no_processes_run())
-    print(calculator.execution_info_each_process())
+    printer.average()
+    printer.max()
+    printer.min()
+    printer.percentile()
+    printer.no_processes_run()
+    printer.execution_info_each_process()
