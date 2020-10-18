@@ -15,8 +15,8 @@ def stress_test(duration: int, shared_dict: dict) -> None:
     This creates a process which runs ``stress.py``.
     It runs this process for ``duration`` seconds.
 
-    It captures the standard output of this process and stores data from this in the
-    given ``shared_dict``.
+    It captures the standard output of this process and stores data from
+    this in the given ``shared_dict``.
     """
     start_time = time.time()
     start_time_monotonic = time.monotonic()
@@ -76,6 +76,11 @@ def run_processes_in_parallel(
 
 
 class CalculateMetrics:
+    """
+    This class takes all of the simulated values and execution metrics
+    from all of the processes run, and calculates various statistics based
+    on those values.
+    """
     def __init__(
         self,
         throughput_metrics: List[int],
@@ -132,6 +137,11 @@ class CalculateMetrics:
 
 
 class CLILineCreator:
+    """
+    This class generates useful human-readable strings from all of the
+    calculations, and generates a summary of the combined strings - these
+    eventually get printed to stdout.
+    """
     def __init__(
         self,
         throughput_metrics: list,
@@ -181,7 +191,9 @@ class CLILineCreator:
         percentile_throughput = (
             self._metrics_calculator.ninety_fifth_percentile_throughput()
         )
-        percentile_latency = self._metrics_calculator.ninety_fifth_percentile_latency()
+        percentile_latency = (
+            self._metrics_calculator.ninety_fifth_percentile_latency()
+        )
         if percentile_latency and percentile_throughput:
             output_string = (
                 f"Throughput 95th percentile = "
@@ -196,7 +208,9 @@ class CLILineCreator:
             return "Not enough data points to calculate percentile"
 
     def _no_processes_run(self) -> str:
-        number_of_processes = self._metrics_calculator.number_of_processes_run()
+        number_of_processes = (
+            self._metrics_calculator.number_of_processes_run()
+        )
         output_string = f"{number_of_processes} processes run in total"
         return output_string
 
@@ -233,8 +247,13 @@ class CLILineCreator:
 
 
 if __name__ == "__main__":
+
+    """
+    We use argparse to spawn N number of processes. An error is returned
+    if an argument of 0 is used.
+    """
     parser = argparse.ArgumentParser(
-        description="Spawn multiple stress processes for ScyllaDB and get metrics"
+        description="Spawn stress processes for ScyllaDB and get metrics"
     )
     parser.add_argument(
         "threads",
