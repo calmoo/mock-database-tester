@@ -5,7 +5,9 @@ values for a set duration of seconds, while also running these processes in para
 ## Usage
 Spawn 3 stress processes in parallel and analyze the results:
 
-```python analyze.py 3```
+```
+python analyze.py 3
+```
 
 Sample output:
 ```
