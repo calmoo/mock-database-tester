@@ -41,7 +41,7 @@ Throughput (ops/s),Latency (ms)
 
 
 
-#How to run the tests:
+## How to run the tests:
 Tested on Python 3.8
 ```
 pip install -r dev-requirements.txt
