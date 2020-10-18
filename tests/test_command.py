@@ -26,3 +26,22 @@ class TestStressProcess:
         lower_bound = given_duration
         upper_bound = given_duration + 0.1
         assert lower_bound <= time_taken <= upper_bound
+
+class TestCalculateMetrics:
+
+    def test_average(self):
+        throughput = [...]
+        latency = [...]
+        exec ...
+        expected = ...
+        metrics = CLIMetrics(throughput=...)
+        assert metrics.average() == expected
+
+class TestCLILineCreator:
+
+    def test_average(self):
+        throughput = [...]
+        latency = [...]
+        expected = ''
+        line_creator = CLILineCreator(...)
+        assert line.average(...) = ...

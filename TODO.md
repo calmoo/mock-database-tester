@@ -1,4 +1,2 @@
 - Pytest coverage
-- Testing for all functionality
 - Comments everywhere
-- 

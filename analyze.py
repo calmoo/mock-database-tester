@@ -10,18 +10,6 @@ import csv
 import io
 
 
-class bcolors:
-    HEADER = "\033[95m"
-    OKBLUE = "\033[94m"
-    OKCYAN = "\033[96m"
-    OKGREEN = "\033[92m"
-    WARNING = "\033[93m"
-    FAIL = "\033[91m"
-    ENDC = "\033[0m"
-    BOLD = "\033[1m"
-    UNDERLINE = "\033[4m"
-
-
 def stress_test(duration: int, shared_dict: dict) -> None:
     """
     This creates a process which runs ``stress.py``.
@@ -63,13 +51,12 @@ def stress_test(duration: int, shared_dict: dict) -> None:
 def run_processes_in_parallel(
     function: Callable[[int, dict], None],
     num_threads: int,
-    max_duration: int,
 ) -> Dict:
     """
     Runs the given ``function`` in ``num_threads`` threads.
 
     Each process is given a unique duration which is between 1 and the given
-    ``max_duration``.
+    ``num_threads``.
     """
     manager = Manager()
     shared_dict = manager.dict()  # type: ignore
@@ -77,7 +64,7 @@ def run_processes_in_parallel(
     shared_dict["latency"] = manager.list()
     shared_dict["execution_stats"] = manager.list()
     processes = []
-    duration_list = random.sample(range(1, max_duration), num_threads)
+    duration_list = random.sample(range(1, num_threads + 1), num_threads)
     for i in range(num_threads):
         duration = duration_list[i]
         process = Process(target=function, args=(duration, shared_dict))
@@ -161,39 +148,39 @@ class CLILineCreator:
         )
         self.execution_metrics = execution_metrics
 
-    def average(self) -> str:
+    def _average(self) -> str:
         average_throughput = self._metrics_calculator.average_throughput()
         average_latency = self._metrics_calculator.average_latency()
         output_string = (
             f"Average Throughput = "
-            f"{bcolors.OKGREEN}{average_throughput} ops/s {bcolors.ENDC}\n"
+            f"{average_throughput} ops/s\n"
             f"Average Latency = "
-            f"{bcolors.OKGREEN}{average_latency}ms{bcolors.ENDC}"
+            f"{average_latency}ms"
         )
         return output_string
 
-    def max(self) -> str:
+    def _max(self) -> str:
         max_throughput = self._metrics_calculator.max_throughput()
         max_latency = self._metrics_calculator.max_latency()
         output_string = (
             f"Max throughput = "
-            f"{bcolors.OKGREEN}{max_throughput} ops/s{bcolors.ENDC}\n"
-            f"Max latency = {bcolors.OKGREEN}{max_latency}ms{bcolors.ENDC}"
+            f"{max_throughput} ops/s\n"
+            f"Max latency = {max_latency}ms"
         )
         return output_string
 
-    def min(self) -> str:
+    def _min(self) -> str:
         min_throughput = self._metrics_calculator.min_throughput()
         min_latency = self._metrics_calculator.min_latency()
         output_string = (
             f"Min throughput = "
-            f"{bcolors.OKGREEN}{min_throughput} ops/s{bcolors.ENDC}\n"
+            f"{min_throughput} ops/s\n"
             f"Min latency = "
-            f"{bcolors.OKGREEN}{min_latency}ms{bcolors.ENDC}"
+            f"{min_latency}ms"
         )
         return output_string
 
-    def percentile(self) -> str:
+    def _percentile(self) -> str:
         percentile_throughput = (
             self._metrics_calculator.ninety_fifth_percentile_throughput()
         )
@@ -202,21 +189,21 @@ class CLILineCreator:
         )
         output_string = (
             f"Throughput 95th percentile = "
-            f"{bcolors.OKGREEN}{percentile_throughput} ops/s{bcolors.ENDC}\n"
+            f"{percentile_throughput} ops/s\n"
             f"Latency 95th percentile = "
-            f"{bcolors.OKGREEN}{percentile_latency}ms{bcolors.ENDC}"
+            f"{percentile_latency}ms"
         )
 
         return output_string
 
-    def no_processes_run(self) -> str:
+    def _no_processes_run(self) -> str:
         number_of_processes = (
             self._metrics_calculator.number_of_processes_run()
         )
         output_string = f"{number_of_processes} processes run in total"
         return output_string
 
-    def execution_info_each_process(self) -> str:
+    def _execution_info_each_process(self) -> str:
         execution_info = self._metrics_calculator.execution_info()
         output_string = ""
         for item in execution_info:
@@ -232,6 +219,16 @@ class CLILineCreator:
             output_string += info_str
         return output_string
 
+    def summary(self):
+        return (
+            self._average() + "\n" +
+            self._max() + "\n" +
+            self._min() + "\n" +
+            self._percentile() + "\n" +
+            self._no_processes_run() + "\n" +
+            self._execution_info_each_process()
+        )
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -239,27 +236,14 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "threads",
-        help="Number of processes to spawn (integer), must be less than or equal"
-        " to max duration value to ensure unique randomness values.",
+        help="Number of processes to spawn (integer)",
         type=int,
     )
-    parser.add_argument(
-        "max_duration", help="Max duration of processes (integer)", type=int
-    )
-
 
     args = parser.parse_args()
 
-    if args.threads > args.max_duration:
-        parser.error(
-            bcolors.WARNING +
-            "Number of threads must be less than or equal to max duration value" +
-            bcolors.ENDC
-        )
-
     output_data = run_processes_in_parallel(
         function=stress_test,
-        max_duration=args.max_duration,
         num_threads=args.threads,
     )
 
@@ -273,9 +257,6 @@ if __name__ == "__main__":
         execution_metrics=execution_metrics,
     )
 
-    print(line_creator.average())
-    print(line_creator.max())
-    print(line_creator.min())
-    print(line_creator.percentile())
-    print(line_creator.no_processes_run())
-    print(line_creator.execution_info_each_process())
+    print(line_creator.summary())
+
+

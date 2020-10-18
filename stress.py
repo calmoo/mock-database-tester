@@ -7,6 +7,10 @@ from typing import Iterable, Dict
 
 
 def simulate_stress(stress_duration: int) -> Iterable[Dict[str, int]]:
+    """
+    Generates random values for throughput and latency once per second for a maximum
+    of ``stress_duration`` seconds.
+    """
     start_time = time.monotonic()
     while time.monotonic() - start_time < stress_duration:
         throughput = random.randrange(0, 100000)
