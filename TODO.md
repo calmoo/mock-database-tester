@@ -1,2 +1,3 @@
 - Pytest coverage
+- Handle 1 thread (e.g. for quantiles stats error)
 - Comments everywhere

@@ -4,8 +4,8 @@ import random
 import time
 import datetime
 import argparse
-import statistics
-from typing import Callable, Dict, List
+from statistics import quantiles, mean
+from typing import Callable, Dict, List, Union
 import csv
 import io
 
@@ -72,7 +72,6 @@ def run_processes_in_parallel(
         processes.append(process)
     for process in processes:
         process.join()
-
     return shared_dict
 
 
@@ -89,13 +88,11 @@ class CalculateMetrics:
 
     def average_throughput(self) -> float:
 
-        throughput_average = sum(self.throughput_metrics) / len(
-            self.throughput_metrics
-        )
+        throughput_average = mean(self.throughput_metrics)
         return throughput_average
 
     def average_latency(self) -> float:
-        latency_average = sum(self.latency_metrics) / len(self.latency_metrics)
+        latency_average = mean(self.latency_metrics)
         return latency_average
 
     def max_throughput(self) -> float:
@@ -114,16 +111,16 @@ class CalculateMetrics:
         latency_min = min(self.latency_metrics)
         return latency_min
 
-    def ninety_fifth_percentile_throughput(self) -> float:
-        percentile_throughput = statistics.quantiles(
-            self.throughput_metrics, n=20
-        )[-1]
+    def ninety_fifth_percentile_throughput(self) -> Union[float, bool]:
+        if len(self.throughput_metrics) < 2:
+            return False
+        percentile_throughput = quantiles(self.throughput_metrics, n=20)[-1]
         return percentile_throughput
 
-    def ninety_fifth_percentile_latency(self) -> float:
-        percentile_latency = statistics.quantiles(self.latency_metrics, n=20)[
-            -1
-        ]
+    def ninety_fifth_percentile_latency(self) -> Union[float, bool]:
+        if len(self.throughput_metrics) < 2:
+            return False
+        percentile_latency = quantiles(self.latency_metrics, n=20)[-1]
         return percentile_latency
 
     def number_of_processes_run(self) -> int:
@@ -184,22 +181,22 @@ class CLILineCreator:
         percentile_throughput = (
             self._metrics_calculator.ninety_fifth_percentile_throughput()
         )
-        percentile_latency = (
-            self._metrics_calculator.ninety_fifth_percentile_latency()
-        )
-        output_string = (
-            f"Throughput 95th percentile = "
-            f"{percentile_throughput} ops/s\n"
-            f"Latency 95th percentile = "
-            f"{percentile_latency}ms"
-        )
+        percentile_latency = self._metrics_calculator.ninety_fifth_percentile_latency()
+        if percentile_latency and percentile_throughput:
+            output_string = (
+                f"Throughput 95th percentile = "
+                f"{percentile_throughput} ops/s\n"
+                f"Latency 95th percentile = "
+                f"{percentile_latency}ms"
+            )
 
-        return output_string
+            return output_string
+
+        else:
+            return "Not enough data points to calculate percentile"
 
     def _no_processes_run(self) -> str:
-        number_of_processes = (
-            self._metrics_calculator.number_of_processes_run()
-        )
+        number_of_processes = self._metrics_calculator.number_of_processes_run()
         output_string = f"{number_of_processes} processes run in total"
         return output_string
 
@@ -219,14 +216,19 @@ class CLILineCreator:
             output_string += info_str
         return output_string
 
-    def summary(self):
+    def summary(self) -> str:
         return (
-            self._average() + "\n" +
-            self._max() + "\n" +
-            self._min() + "\n" +
-            self._percentile() + "\n" +
-            self._no_processes_run() + "\n" +
-            self._execution_info_each_process()
+            self._average()
+            + "\n"
+            + self._max()
+            + "\n"
+            + self._min()
+            + "\n"
+            + self._percentile()
+            + "\n"
+            + self._no_processes_run()
+            + "\n"
+            + self._execution_info_each_process()
         )
 
 
@@ -241,6 +243,9 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
+
+    if args.threads < 1:
+        parser.error("Number of threads must be greater than 0")
 
     output_data = run_processes_in_parallel(
         function=stress_test,
@@ -258,5 +263,3 @@ if __name__ == "__main__":
     )
 
     print(line_creator.summary())
-
-
