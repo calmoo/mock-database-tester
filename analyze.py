@@ -22,31 +22,16 @@ class bcolors:
     UNDERLINE = "\033[4m"
 
 
-parser = argparse.ArgumentParser(
-    description="Spawn multiple stress processes for ScyllaDB and get metrics"
-)
-parser.add_argument(
-    "threads",
-    help="Number of processes to spawn (integer), must be less than or equal"
-    " to max duration value to ensure unique randomness values.",
-    type=int,
-)
-parser.add_argument(
-    "max_duration", help="Max duration of processes (integer)", type=int
-)
-
-
-args = parser.parse_args()
-
-if args.threads > args.max_duration:
-    parser.error(
-        "Number of threads must be less than or equal to max duration value"
-    )
-
-
 def stress_test(duration: int, shared_dict: dict) -> None:
+    """
+    This creates a process which runs ``stress.py``.
+    It runs this process for ``duration`` seconds.
 
+    It captures the standard output of this process and stores data from this in the
+    given ``shared_dict``.
+    """
     start_time = time.time()
+    start_time_monotonic = time.monotonic()
 
     stress_test_process = subprocess.Popen(
         ["python", "stress.py", str(duration)],
@@ -60,7 +45,8 @@ def stress_test(duration: int, shared_dict: dict) -> None:
     throughput_values_int = [int(row["Throughput (ops/s)"]) for row in rows]
     latency_values_int = [int(row["Latency (ms)"]) for row in rows]
     end_time = time.time()
-    total_time = end_time - start_time
+    end_time_monotonic = time.monotonic()
+    total_time = end_time_monotonic - start_time_monotonic
     start_time_str = datetime.datetime.fromtimestamp(start_time).strftime("%c")
     end_time_str = datetime.datetime.fromtimestamp(end_time).strftime("%c")
     process_stats = {
@@ -75,8 +61,16 @@ def stress_test(duration: int, shared_dict: dict) -> None:
 
 
 def run_processes_in_parallel(
-    function: Callable[[int, dict], None], num_threads: int, max_duration: int
+    function: Callable[[int, dict], None],
+    num_threads: int,
+    max_duration: int,
 ) -> Dict:
+    """
+    Runs the given ``function`` in ``num_threads`` threads.
+
+    Each process is given a unique duration which is between 1 and the given
+    ``max_duration``.
+    """
     manager = Manager()
     shared_dict = manager.dict()  # type: ignore
     shared_dict["throughput"] = manager.list()
@@ -239,58 +233,49 @@ class CLILineCreator:
         return output_string
 
 
-class CLIPrinter:
-    def __init__(
-        self,
-        throughput_metrics: list,
-        latency_metrics: list,
-        execution_metrics: list,
-    ):
-        self._cli_line_creator = CLILineCreator(
-            throughput_metrics=throughput_metrics,
-            latency_metrics=latency_metrics,
-            execution_metrics=execution_metrics,
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Spawn multiple stress processes for ScyllaDB and get metrics"
+    )
+    parser.add_argument(
+        "threads",
+        help="Number of processes to spawn (integer), must be less than or equal"
+        " to max duration value to ensure unique randomness values.",
+        type=int,
+    )
+    parser.add_argument(
+        "max_duration", help="Max duration of processes (integer)", type=int
+    )
+
+
+    args = parser.parse_args()
+
+    if args.threads > args.max_duration:
+        parser.error(
+            bcolors.WARNING +
+            "Number of threads must be less than or equal to max duration value" +
+            bcolors.ENDC
         )
 
-    def average(self) -> None:
-        print(self._cli_line_creator.average())
-
-    def max(self) -> None:
-        print(self._cli_line_creator.max())
-
-    def min(self) -> None:
-        print(self._cli_line_creator.min())
-
-    def percentile(self) -> None:
-        print(self._cli_line_creator.percentile())
-
-    def no_processes_run(self) -> None:
-        print(self._cli_line_creator.no_processes_run())
-
-    def execution_info_each_process(self) -> None:
-        print(self._cli_line_creator.execution_info_each_process())
-
-
-if __name__ == "__main__":
     output_data = run_processes_in_parallel(
         function=stress_test,
         max_duration=args.max_duration,
         num_threads=args.threads,
     )
 
-    throughput = output_data["throughput"][:]
-    latency = output_data["latency"][:]
-    execution_metrics = output_data["execution_stats"][:]
+    throughput = list(output_data["throughput"])
+    latency = list(output_data["latency"])
+    execution_metrics = list(output_data["execution_stats"])
 
-    printer = CLIPrinter(
+    line_creator = CLILineCreator(
         throughput_metrics=throughput,
         latency_metrics=latency,
         execution_metrics=execution_metrics,
     )
 
-    printer.average()
-    printer.max()
-    printer.min()
-    printer.percentile()
-    printer.no_processes_run()
-    printer.execution_info_each_process()
+    print(line_creator.average())
+    print(line_creator.max())
+    print(line_creator.min())
+    print(line_creator.percentile())
+    print(line_creator.no_processes_run())
+    print(line_creator.execution_info_each_process())
