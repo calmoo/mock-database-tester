@@ -1,0 +1,5 @@
+https://stackoverflow.com/questions/7207309/how-to-run-functions-in-parallel
+https://docs.python.org/2/library/multiprocessing.html
+https://medium.com/@lih.verma/multi-processing-in-python-process-vs-pool-5caf0f67eb2b
+
+pytest --cov-fail-under 100 --cov tests/ --cov analyze.py --cov stress.py -vvv --cov-report html   
