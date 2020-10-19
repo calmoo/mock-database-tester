@@ -4,7 +4,7 @@ import random
 import time
 import datetime
 import argparse
-from statistics import quantiles, mean
+from statistics import quantiles, mean, StatisticsError
 from typing import Callable, Dict, List, Union
 import csv
 import io
@@ -64,7 +64,7 @@ def run_processes_in_parallel(
     shared_dict["latency"] = manager.list()
     shared_dict["execution_stats"] = manager.list()
     processes = []
-    duration_list = random.sample(range(1, num_threads + 1), num_threads)
+    duration_list = random.sample(range(2, num_threads + 2), num_threads)
     for i in range(num_threads):
         duration = duration_list[i]
         process = Process(target=function, args=(duration, shared_dict))
@@ -117,14 +117,12 @@ class CalculateMetrics:
         return latency_min
 
     def ninety_fifth_percentile_throughput(self) -> Union[float, bool]:
-        if len(self.throughput_metrics) < 2:
-            return False
+
         percentile_throughput = quantiles(self.throughput_metrics, n=20)[-1]
         return percentile_throughput
 
     def ninety_fifth_percentile_latency(self) -> Union[float, bool]:
-        if len(self.throughput_metrics) < 2:
-            return False
+
         percentile_latency = quantiles(self.latency_metrics, n=20)[-1]
         return percentile_latency
 
@@ -188,24 +186,23 @@ class CLILineCreator:
         return output_string
 
     def _percentile(self) -> str:
+
         percentile_throughput = (
             self._metrics_calculator.ninety_fifth_percentile_throughput()
         )
+
         percentile_latency = (
             self._metrics_calculator.ninety_fifth_percentile_latency()
         )
-        if percentile_latency and percentile_throughput:
-            output_string = (
-                f"Throughput 95th percentile = "
-                f"{percentile_throughput} ops/s\n"
-                f"Latency 95th percentile = "
-                f"{percentile_latency}ms"
-            )
 
-            return output_string
+        output_string = (
+            f"Throughput 95th percentile = "
+            f"{percentile_throughput} ops/s\n"
+            f"Latency 95th percentile = "
+            f"{percentile_latency}ms"
+        )
+        return output_string
 
-        else:
-            return "Not enough data points to calculate percentile"
 
     def _no_processes_run(self) -> str:
         number_of_processes = (

@@ -11,9 +11,7 @@ from analyze import (
     stress_test,
 )
 import time
-import hashlib
 from typing import List
-
 
 class TestStressProcess:
     def test_stress_process(self) -> None:
@@ -38,7 +36,7 @@ class TestStressProcess:
         of the duration specified, here are a tolerance of +0.3s is set.
         """
         start_time = time.monotonic()
-        row = [row for row in simulate_stress(stress_duration=given_duration)]
+        _ = [row for row in simulate_stress(stress_duration=given_duration)]
         end_time = time.monotonic()
         time_taken = end_time - start_time
         lower_bound = given_duration
@@ -121,29 +119,6 @@ class TestCalculateMetrics:
             == expected_latency_percentile
         )
 
-    def test_percentile_invalid(self) -> None:
-        """
-        95th percentile of a single value should return False.
-        """
-        throughput_metrics = [1]
-        latency_metrics = [1]
-        execution_metrics: List = []
-        expected_throughput_percentile = False
-        expected_latency_percentile = False
-        metrics = CalculateMetrics(
-            throughput_metrics=throughput_metrics,
-            latency_metrics=latency_metrics,
-            execution_metrics=execution_metrics,
-        )
-        assert (
-            metrics.ninety_fifth_percentile_throughput()
-            == expected_throughput_percentile
-        )
-        assert (
-            metrics.ninety_fifth_percentile_latency()
-            == expected_latency_percentile
-        )
-
     def test_number_processes_run(self) -> None:
         """
         The number of execution info items should be counted accurately.
@@ -188,10 +163,11 @@ class TestCLILineCreator:
             latency_metrics=latency_metrics,
             execution_metrics=execution_metrics,
         )
-        expected_summary_hash = "edfd1eb4326dfadcea1bf00b11b67274"
-        hash_object = hashlib.md5(line_creator.summary().encode())
-        hash_from_summary = hash_object.hexdigest()
-        assert hash_from_summary == expected_summary_hash
+
+        from pathlib import Path
+        expected_contents_file = Path(__file__).parent / 'expected_summary.txt'
+        expected_contents = expected_contents_file.read_text()
+        assert expected_contents == line_creator.summary()
 
 
 class TestRunProcessesInParallel:
@@ -238,3 +214,13 @@ class TestRunProcessesInParallel:
         lower_bound = number_threads
         upper_bound = number_threads + 0.5
         assert lower_bound < actual_longest_time < upper_bound
+
+class TestStressTestCaller:
+    def test_dictionary(self):
+        """
+
+        :return:
+        """
+        shared_dict = {"throughput":[], "latency": [], "execution_stats" : []}
+
+        stress_test(duration=1,shared_dict=shared_dict)
