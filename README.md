@@ -75,14 +75,3 @@ pytest --cov-fail-under 100 --cov tests/ --cov analyze --cov stress
 flake8 .
 mypy tests stress.py analyze.py
 ```
-
-
-
-
-
-
-
-
-
-
-.
