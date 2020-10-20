@@ -34,7 +34,7 @@ def stress_test(duration: int, shared_dict: dict) -> None:
     latency_values_int = [int(row["Latency (ms)"]) for row in rows]
     end_time = time.time()
     end_time_monotonic = time.monotonic()
-    total_time = round(end_time_monotonic - start_time_monotonic, 2)
+    total_time = end_time_monotonic - start_time_monotonic
     start_time_str = datetime.datetime.fromtimestamp(start_time).strftime("%c")
     end_time_str = datetime.datetime.fromtimestamp(end_time).strftime("%c")
     process_stats = {
@@ -67,8 +67,7 @@ def run_processes_in_parallel(
     shared_dict["execution_stats"] = manager.list()
     processes = []
     duration_list = random.sample(range(2, num_threads + 2), num_threads)
-    for i in range(num_threads):
-        duration = duration_list[i]
+    for duration in duration_list:
         process = Process(target=function, args=(duration, shared_dict))
         process.start()
         processes.append(process)
@@ -218,11 +217,11 @@ class CLILineCreator:
             pid = item["pid"]
             start_time = item["start_time"]
             end_time = item["end_time"]
-            total_time = item["total_time"]
+            total_time = round(item["total_time"], 2)
             info_str = (
-                f"pid: {pid} started at {start_time}"
+                f"\npid: {pid} started at {start_time}"
                 f" and finished at {end_time}"
-                f" taking  {total_time} seconds to complete\n"
+                f" taking {total_time} seconds to complete"
             )
             output_string += info_str
         return output_string
@@ -238,7 +237,6 @@ class CLILineCreator:
             + self._percentile()
             + "\n"
             + self._no_processes_run()
-            + "\n"
             + self._execution_info_each_process()
         )
 
