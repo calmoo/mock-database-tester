@@ -1,6 +1,7 @@
 # ScyllaDB Stress simulation
 This is a mock database tester and CLI program that runs a process which generates random latency and throughput
-values for a set duration of seconds, while also running these processes in parallel.
+values for a set duration of seconds, while also running these processes in parallel. A summary of these processes is
+printed after execution has completed.
 
 ## Usage
 The number of processes to spawn is passed as an integer when running the program. This value must be larger than 0.
@@ -13,19 +14,18 @@ python analyze.py 3
 
 Sample output:
 ```
-Average Throughput = 44036.5 ops/s
-Average Latency = 9102.333333333334ms
-Max throughput = 80085 ops/s
-Max latency = 18705ms
-Min throughput = 8779 ops/s
-Min latency = 2881ms
-Throughput 95th percentile = 80105.15 ops/s
-Latency 95th percentile = 23951.8ms
+Average Throughput = 38587.89 ops/s
+Average Latency = 9331.78ms
+Max throughput = 87622 ops/s
+Max latency = 17266ms
+Min throughput = 747 ops/s
+Min latency = 304ms
+Throughput 95th percentile = 90609.5 ops/s
+Latency 95th percentile = 18183.0ms
 3 processes run in total
-pid: 91365 started at Sun Oct 18 19:49:00 2020 and finished at Sun Oct 18 19:49:01 2020 taking  1.0824404859999999 seconds to complete
-pid: 91367 started at Sun Oct 18 19:49:00 2020 and finished at Sun Oct 18 19:49:02 2020 taking  2.085682722 seconds to complete
-pid: 91366 started at Sun Oct 18 19:49:00 2020 and finished at Sun Oct 18 19:49:03 2020 taking  3.086642045 seconds to complete
-
+pid: 26849 started at Tue Oct 20 17:57:52 2020 and finished at Tue Oct 20 17:57:54 2020 taking  2.09 seconds to complete
+pid: 26847 started at Tue Oct 20 17:57:52 2020 and finished at Tue Oct 20 17:57:55 2020 taking  3.09 seconds to complete
+pid: 26848 started at Tue Oct 20 17:57:52 2020 and finished at Tue Oct 20 17:57:56 2020 taking  4.09 seconds to complete
 ```
 The stress.py process can also be run independently with no analysis,
 the duration of the process is passed as an argument:
