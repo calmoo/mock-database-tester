@@ -3,6 +3,8 @@ This is a mock database tester and CLI program that runs a process which generat
 values for a set duration of seconds, while also running these processes in parallel.
 
 ## Usage
+The number of processes to spawn is passed as an integer when running the program. This value must be larger than 0.
+
 Spawn 3 stress processes in parallel and analyze the results:
 
 ```
@@ -44,8 +46,43 @@ Throughput (ops/s),Latency (ms)
 
 
 ## How to run the tests:
-Tested on Python 3.8
+Tested on Python 3.8. The tests 
 ```
 pip install -r dev-requirements.txt
 pytest
 ```
+
+## Decisions made:
+
+- For multithreading, I used the multiprocessing libray. The Process class was used over the Pool class , as the Pool
+ class waits for a process to complete
+an operation before scheduling another one. As this program is IO bound (reads stdout which is delayed every second),
+the Process class was used, as it halts the current process and scheduled another one.
+
+- I included list comprehension and a generator in the code as I wanted to become more familiar with them after 
+our initial interview.
+
+- Apart from pytest, all imports are standard libraries for improved maintainability and less overhead.
+
+- Initially the program wrote to stdout in columns seperated by spaces - this was later changed to a CSV style
+output to simplify output parsing and to reduce any future parsing errors.
+
+- The summary values are rounded to two decimal places for readability.
+
+- The tests are comprehensive and have thorough coverage. The code is fully typed with mypy and linted with flake8:
+```
+pytest --cov-fail-under 100 --cov tests/ --cov analyze --cov stress
+flake8 .
+mypy tests stress.py analyze.py
+```
+
+
+
+
+
+
+
+
+
+
+.

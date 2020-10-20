@@ -5,13 +5,14 @@ Tests for stress tester
 import pytest
 from stress import simulate_stress
 from analyze import (
-    CalculateMetrics,
+    MetricsCalculator,
     CLILineCreator,
     run_processes_in_parallel,
     stress_test,
 )
 import time
-from typing import List
+from typing import List, Dict
+
 
 class TestStressProcess:
     def test_stress_process(self) -> None:
@@ -54,7 +55,7 @@ class TestCalculateMetrics:
         execution_metrics: List = []
         expected_throughput_average = 5.5
         expected_latency_average = 5.6
-        metrics = CalculateMetrics(
+        metrics = MetricsCalculator(
             throughput_metrics=throughput_metrics,
             latency_metrics=latency_metrics,
             execution_metrics=execution_metrics,
@@ -71,7 +72,7 @@ class TestCalculateMetrics:
         execution_metrics: List = []
         expected_throughput_max = 10
         expected_latency_max = 11
-        metrics = CalculateMetrics(
+        metrics = MetricsCalculator(
             throughput_metrics=throughput_metrics,
             latency_metrics=latency_metrics,
             execution_metrics=execution_metrics,
@@ -88,7 +89,7 @@ class TestCalculateMetrics:
         execution_metrics: List = []
         expected_throughput_min = 1
         expected_latency_min = 0
-        metrics = CalculateMetrics(
+        metrics = MetricsCalculator(
             throughput_metrics=throughput_metrics,
             latency_metrics=latency_metrics,
             execution_metrics=execution_metrics,
@@ -105,7 +106,7 @@ class TestCalculateMetrics:
         execution_metrics: List = []
         expected_throughput_percentile = 10.45
         expected_latency_percentile = 11.9
-        metrics = CalculateMetrics(
+        metrics = MetricsCalculator(
             throughput_metrics=throughput_metrics,
             latency_metrics=latency_metrics,
             execution_metrics=execution_metrics,
@@ -114,9 +115,8 @@ class TestCalculateMetrics:
             metrics.ninety_fifth_percentile_throughput()
             == expected_throughput_percentile
         )
-        assert (
-            metrics.ninety_fifth_percentile_latency()
-            == expected_latency_percentile
+        assert metrics.ninety_fifth_percentile_latency() == (
+            expected_latency_percentile
         )
 
     def test_number_processes_run(self) -> None:
@@ -133,7 +133,7 @@ class TestCalculateMetrics:
                 "total_time": 1.065514607,
             }
         ]
-        metrics = CalculateMetrics(
+        metrics = MetricsCalculator(
             throughput_metrics=throughput_metrics,
             latency_metrics=latency_metrics,
             execution_metrics=execution_metrics,
@@ -145,8 +145,9 @@ class TestCLILineCreator:
     def test_summary(self) -> None:
         """
         The summary of all processes should be printed accurately.
-        For cleanliness, we hash the printed summary and compare it to
-        a pre-calculated hash of a manually verified output.
+        For cleanliness and avoiding formatting headaches, a manually verified
+        print output is read from ``expected_summary.txt`` and compared to
+        the output value from the code.
         """
         throughput_metrics = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         latency_metrics = [0, 2, 3, 4, 5, 6, 7, 8, 9, 11]
@@ -165,7 +166,8 @@ class TestCLILineCreator:
         )
 
         from pathlib import Path
-        expected_contents_file = Path(__file__).parent / 'expected_summary.txt'
+
+        expected_contents_file = Path(__file__).parent / "expected_summary.txt"
         expected_contents = expected_contents_file.read_text()
         assert expected_contents == line_creator.summary()
 
@@ -184,7 +186,7 @@ class TestRunProcessesInParallel:
 
         throughput = list(output_data["throughput"])
         latency = list(output_data["latency"])
-        expected_length = sum(range(1, number_threads + 1))
+        expected_length = sum(range(2, number_threads + 2))
         actual_throughput_length = len(throughput)
         actual_latency_length = len(latency)
         assert actual_throughput_length == expected_length
@@ -200,6 +202,9 @@ class TestRunProcessesInParallel:
     def test_timing(self, number_threads: int) -> None:
         """
         The maximum time of a process should be accurate when run in parallel.
+        Here a tolerance of 0.5 is set, as the timing error increases for
+        a larger number of threads. 1 is added to the tolerance, as the minimum
+        execution time is always at least 2 seconds.
         """
         output_data = run_processes_in_parallel(
             function=stress_test,
@@ -212,15 +217,19 @@ class TestRunProcessesInParallel:
             times.append(total_time)
         actual_longest_time = max(times)
         lower_bound = number_threads
-        upper_bound = number_threads + 0.5
+        upper_bound = number_threads + 1.5
         assert lower_bound < actual_longest_time < upper_bound
 
+
 class TestStressTestCaller:
-    def test_dictionary(self):
-        """
-
-        :return:
-        """
-        shared_dict = {"throughput":[], "latency": [], "execution_stats" : []}
-
-        stress_test(duration=1,shared_dict=shared_dict)
+    """
+    The stress_test caller function should mutate the lists in the dictionary
+    correctly.
+    """
+    def test_dict_results(self) -> None:
+        dict_input: Dict = {
+            "throughput": [], "latency": [], "execution_stats": []
+        }
+        stress_test(duration=1, shared_dict=dict_input)
+        for key in dict_input:
+            assert len(dict_input[key]) == 1

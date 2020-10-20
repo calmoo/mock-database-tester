@@ -4,7 +4,7 @@ import random
 import time
 import datetime
 import argparse
-from statistics import quantiles, mean, StatisticsError
+from statistics import quantiles, mean
 from typing import Callable, Dict, List, Union
 import csv
 import io
@@ -34,7 +34,7 @@ def stress_test(duration: int, shared_dict: dict) -> None:
     latency_values_int = [int(row["Latency (ms)"]) for row in rows]
     end_time = time.time()
     end_time_monotonic = time.monotonic()
-    total_time = end_time_monotonic - start_time_monotonic
+    total_time = round(end_time_monotonic - start_time_monotonic, 2)
     start_time_str = datetime.datetime.fromtimestamp(start_time).strftime("%c")
     end_time_str = datetime.datetime.fromtimestamp(end_time).strftime("%c")
     process_stats = {
@@ -57,6 +57,8 @@ def run_processes_in_parallel(
 
     Each process is given a unique duration which is between 1 and the given
     ``num_threads``.
+
+    A shared dictionary is used amongst all spawned processes.
     """
     manager = Manager()
     shared_dict = manager.dict()  # type: ignore
@@ -75,12 +77,13 @@ def run_processes_in_parallel(
     return shared_dict
 
 
-class CalculateMetrics:
+class MetricsCalculator:
     """
     This class takes all of the simulated values and execution metrics
     from all of the processes run, and calculates various statistics based
     on those values.
     """
+
     def __init__(
         self,
         throughput_metrics: List[int],
@@ -94,11 +97,13 @@ class CalculateMetrics:
     def average_throughput(self) -> float:
 
         throughput_average = mean(self.throughput_metrics)
-        return throughput_average
+        throughput_average_rounded = round(throughput_average, 2)
+        return throughput_average_rounded
 
     def average_latency(self) -> float:
         latency_average = mean(self.latency_metrics)
-        return latency_average
+        throughput_average_rounded = round(latency_average, 2)
+        return throughput_average_rounded
 
     def max_throughput(self) -> float:
         throughput_max = max(self.throughput_metrics)
@@ -117,12 +122,10 @@ class CalculateMetrics:
         return latency_min
 
     def ninety_fifth_percentile_throughput(self) -> Union[float, bool]:
-
         percentile_throughput = quantiles(self.throughput_metrics, n=20)[-1]
         return percentile_throughput
 
     def ninety_fifth_percentile_latency(self) -> Union[float, bool]:
-
         percentile_latency = quantiles(self.latency_metrics, n=20)[-1]
         return percentile_latency
 
@@ -140,13 +143,14 @@ class CLILineCreator:
     calculations, and generates a summary of the combined strings - these
     eventually get printed to stdout.
     """
+
     def __init__(
         self,
         throughput_metrics: list,
         latency_metrics: list,
         execution_metrics: list,
     ):
-        self._metrics_calculator = CalculateMetrics(
+        self._metrics_calculator = MetricsCalculator(
             throughput_metrics=throughput_metrics,
             latency_metrics=latency_metrics,
             execution_metrics=execution_metrics,
@@ -194,7 +198,6 @@ class CLILineCreator:
         percentile_latency = (
             self._metrics_calculator.ninety_fifth_percentile_latency()
         )
-
         output_string = (
             f"Throughput 95th percentile = "
             f"{percentile_throughput} ops/s\n"
@@ -203,12 +206,9 @@ class CLILineCreator:
         )
         return output_string
 
-
     def _no_processes_run(self) -> str:
-        number_of_processes = (
-            self._metrics_calculator.number_of_processes_run()
-        )
-        output_string = f"{number_of_processes} processes run in total"
+        num_processes = self._metrics_calculator.number_of_processes_run()
+        output_string = f"{num_processes} processes run in total"
         return output_string
 
     def _execution_info_each_process(self) -> str:
@@ -243,7 +243,7 @@ class CLILineCreator:
         )
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
 
     """
     We use argparse to spawn N number of processes. An error is returned

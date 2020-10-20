@@ -20,7 +20,7 @@ def simulate_stress(stress_duration: int) -> Iterable[Dict[str, int]]:
         time.sleep(1)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     parser = argparse.ArgumentParser(description="Simulate stress on ScyllaDB")
     parser.add_argument(
         "duration", help="Duration of stress process (integer)", type=int
