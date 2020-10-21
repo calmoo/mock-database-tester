@@ -1,9 +1,9 @@
-import sys
-import time
-import random
 import argparse
 import csv
-from typing import Iterable, Dict
+import random
+import sys
+import time
+from typing import Dict, Iterable
 
 
 def simulate_stress(stress_duration: int) -> Iterable[Dict[str, int]]:
@@ -23,7 +23,9 @@ def simulate_stress(stress_duration: int) -> Iterable[Dict[str, int]]:
 if __name__ == "__main__":  # pragma: no cover
     parser = argparse.ArgumentParser(description="Simulate stress on ScyllaDB")
     parser.add_argument(
-        "duration", help="Duration of stress process (integer)", type=int
+        "duration",
+        help="Duration of stress process in seconds (integer)",
+        type=int,
     )
     args = parser.parse_args()
 
