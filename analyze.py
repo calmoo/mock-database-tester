@@ -37,12 +37,10 @@ class StressTest:
         end_time = time.time()
         end_time_monotonic = time.monotonic()
         total_time = end_time_monotonic - start_time_monotonic
-        start_time_str = datetime.datetime.fromtimestamp(start_time).strftime("%c")
-        end_time_str = datetime.datetime.fromtimestamp(end_time).strftime("%c")
         process_stats = {
             "pid": stress_test_process.pid,
-            "start_time": start_time_str,
-            "end_time": end_time_str,
+            "start_time": start_time,
+            "end_time": end_time,
             "total_time": total_time,
         }
         shared_dict["throughput"].extend(throughput_values_int)
@@ -181,10 +179,16 @@ class CLILineCreator:
             pid = item["pid"]
             start_time = item["start_time"]
             end_time = item["end_time"]
+            start_time_human = (
+                datetime.datetime.fromtimestamp(start_time).strftime("%c")
+            )
+            end_time_human = (
+                datetime.datetime.fromtimestamp(end_time).strftime("%c")
+            )
             total_time = round(item["total_time"], 2)
             info_str = (
-                f"\npid: {pid} started at {start_time}"
-                f" and finished at {end_time}"
+                f"\npid: {pid} started at {start_time_human}"
+                f" and finished at {end_time_human}"
                 f" taking {total_time} seconds to complete"
             )
             output_string += info_str
