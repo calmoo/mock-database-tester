@@ -1,12 +1,12 @@
 # ScyllaDB Stress simulation
-This is a mock database tester and CLI program that runs a process which generates random latency and throughput
-values for a set duration of seconds, while also running these processes in parallel. A summary of these processes is
+This is a mock database tester and CLI program that runs a thread which generates random latency and throughput
+values for a set duration of seconds, while also running these threads in parallel. A summary of these threads is
 printed after execution has completed.
 
 ## Usage
-The number of processes to spawn is passed as an integer when running the program. This value must be larger than 0.
+The number of threads to spawn is passed as an integer when running the program. This value must be larger than 0.
 
-Spawn 3 stress processes in parallel and analyze the results:
+Spawn 3 stress threads in parallel and analyze the results:
 
 ```
 python analyze.py 3
@@ -22,13 +22,13 @@ Min throughput = 747 ops/s
 Min latency = 304ms
 Throughput 95th percentile = 90609.5 ops/s
 Latency 95th percentile = 18183.0ms
-3 processes run in total
+3 threads run in total
 pid: 26849 started at Tue Oct 20 17:57:52 2020 and finished at Tue Oct 20 17:57:54 2020 taking  2.09 seconds to complete
 pid: 26847 started at Tue Oct 20 17:57:52 2020 and finished at Tue Oct 20 17:57:55 2020 taking  3.09 seconds to complete
 pid: 26848 started at Tue Oct 20 17:57:52 2020 and finished at Tue Oct 20 17:57:56 2020 taking  4.09 seconds to complete
 ```
-The stress.py process can also be run independently with no analysis,
-the duration of the process is passed as an argument:
+The stress.py program can also be run independently with no analysis,
+the duration of the thread is passed as an argument:
 
 ```
 python stress.py 3

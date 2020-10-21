@@ -7,7 +7,7 @@ from stress import simulate_stress
 from analyze import (
     MetricsCalculator,
     CLILineCreator,
-    run_processes_in_parallel,
+    run_threads_in_parallel,
     stress_test,
 )
 import time
@@ -119,7 +119,7 @@ class TestCalculateMetrics:
             expected_latency_percentile
         )
 
-    def test_number_processes_run(self) -> None:
+    def test_number_threads_run(self) -> None:
         """
         The number of execution info items should be counted accurately.
         """
@@ -138,13 +138,13 @@ class TestCalculateMetrics:
             latency_metrics=latency_metrics,
             execution_metrics=execution_metrics,
         )
-        assert metrics.number_of_processes_run() == 1
+        assert metrics.number_of_threads_run() == 1
 
 
 class TestCLILineCreator:
     def test_summary(self) -> None:
         """
-        The summary of all processes should be printed accurately.
+        The summary of all threads should be printed accurately.
         For cleanliness and avoiding formatting headaches, a manually verified
         print output is read from ``expected_summary.txt`` and compared to
         the output value from the code.
@@ -172,14 +172,14 @@ class TestCLILineCreator:
         assert expected_contents == line_creator.summary()
 
 
-class TestRunProcessesInParallel:
+class TestRunThreadsInParallel:
     @pytest.mark.parametrize("number_threads", [0, 1, 2, 3, 4, 5])
     def test_output_data_valid(self, number_threads: int) -> None:
         """
         The number of simulated values and range of values should be accurate
         when run in parallel.
         """
-        output_data = run_processes_in_parallel(
+        output_data = run_threads_in_parallel(
             function=stress_test,
             num_threads=number_threads,
         )
@@ -201,12 +201,12 @@ class TestRunProcessesInParallel:
     @pytest.mark.parametrize("number_threads", [1, 2, 3, 4, 5])
     def test_timing(self, number_threads: int) -> None:
         """
-        The maximum time of a process should be accurate when run in parallel.
+        The maximum time of a thread should be accurate when run in parallel.
         Here a tolerance of 0.5 is set, as the timing error increases for
         a larger number of threads. 1 is added to the tolerance, as the minimum
         execution time is always at least 2 seconds.
         """
-        output_data = run_processes_in_parallel(
+        output_data = run_threads_in_parallel(
             function=stress_test,
             num_threads=number_threads,
         )
@@ -226,6 +226,7 @@ class TestStressTestCaller:
     The stress_test caller function should mutate the lists in the dictionary
     correctly.
     """
+
     def test_dict_results(self) -> None:
         dict_input: Dict = {
             "throughput": [], "latency": [], "execution_stats": []
