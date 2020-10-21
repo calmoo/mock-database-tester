@@ -54,11 +54,6 @@ pytest
 
 ## Decisions made:
 
-- For multithreading, I used the multiprocessing libray. The Process class was used over the Pool class , as the Pool
- class waits for a process to complete
-an operation before scheduling another one. As this program is IO bound (reads stdout which is delayed every second),
-the Process class was used, as it halts the current process and scheduled another one.
-
 - I included list comprehension and a generator in the code as I wanted to become more familiar with them after 
 our initial interview.
 

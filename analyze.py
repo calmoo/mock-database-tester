@@ -11,7 +11,9 @@ from typing import Dict, List
 
 
 class ProcessStats:
-    def __init__(self, pid: int, start_time: float, end_time: float, total_time: float):
+    def __init__(
+        self, pid: int, start_time: float, end_time: float, total_time: float
+    ):
         self.pid = pid
         self.start_time = start_time
         self.end_time = end_time
@@ -40,7 +42,9 @@ class StressTest:
         output_file = io.StringIO(output_string)
         csv_reader = csv.DictReader(output_file)
         rows = [row for row in csv_reader]
-        throughput_values_int = [int(row["Throughput (ops/s)"]) for row in rows]
+        throughput_values_int = [
+            int(row["Throughput (ops/s)"]) for row in rows
+        ]
         latency_values_int = [int(row["Latency (ms)"]) for row in rows]
         end_time = time.time()
         end_time_monotonic = time.monotonic()
@@ -56,7 +60,7 @@ class StressTest:
         shared_dict["latency"].extend(latency_values_int)
         shared_dict["execution_stats"].append(process_stats)
 
-    def run(self, num_threads: int) -> 'Metrics':
+    def run(self, num_threads: int) -> "Metrics":
         """
         Runs the stress function in ``num_threads`` threads.
 
@@ -73,16 +77,18 @@ class StressTest:
         threads = []
         duration_list = random.sample(range(2, num_threads + 2), num_threads)
         for duration in duration_list:
-            thread = Thread(target=self._stress_test, args=(duration, shared_dict))
+            thread = Thread(
+                target=self._stress_test, args=(duration, shared_dict)
+            )
             thread.start()
             threads.append(thread)
         for thread in threads:
             thread.join()
 
         return Metrics(
-            throughput_metrics=shared_dict['throughput'],
-            latency_metrics=shared_dict['latency'],
-            execution_metrics=shared_dict['execution_stats'],
+            throughput_metrics=shared_dict["throughput"],
+            latency_metrics=shared_dict["latency"],
+            execution_metrics=shared_dict["execution_stats"],
         )
 
 
@@ -105,12 +111,12 @@ class Metrics:
         self.max_latency = max(latency_metrics)
         self.min_throughput = min(throughput_metrics)
         self.min_latency = min(latency_metrics)
-        self.ninety_fifth_percentile_throughput = (
-            quantiles(throughput_metrics, n=20)[-1]
-        )
-        self.ninety_fifth_percentile_latency = (
-            quantiles(latency_metrics, n=20)[-1]
-        )
+        self.ninety_fifth_percentile_throughput = quantiles(
+            throughput_metrics, n=20
+        )[-1]
+        self.ninety_fifth_percentile_latency = quantiles(
+            latency_metrics, n=20
+        )[-1]
         self.number_of_threads_run = len(execution_metrics)
         self.execution_info = execution_metrics
 
@@ -142,9 +148,9 @@ class CLILineCreator:
         max_throughput = self._metrics_calculator.max_throughput
         max_latency = self._metrics_calculator.max_latency
         output_string = (
-            f"Max throughput = "
+            f"Max Throughput = "
             f"{max_throughput} ops/s\n"
-            f"Max latency = {max_latency}ms"
+            f"Max Latency = {max_latency}ms"
         )
         return output_string
 
@@ -152,9 +158,9 @@ class CLILineCreator:
         min_throughput = self._metrics_calculator.min_throughput
         min_latency = self._metrics_calculator.min_latency
         output_string = (
-            f"Min throughput = "
+            f"Min Throughput = "
             f"{min_throughput} ops/s\n"
-            f"Min latency = "
+            f"Min Latency = "
             f"{min_latency}ms"
         )
         return output_string
@@ -178,7 +184,7 @@ class CLILineCreator:
 
     def _no_threads_run(self) -> str:
         num_threads = self._metrics_calculator.number_of_threads_run
-        output_string = f"{num_threads} threads run in total"
+        output_string = f"Total threads run = {num_threads}"
         return output_string
 
     def _execution_info_each_thread(self) -> str:
@@ -188,12 +194,12 @@ class CLILineCreator:
             pid = item.pid
             start_time = item.start_time
             end_time = item.end_time
-            start_time_human = (
-                datetime.datetime.fromtimestamp(start_time).strftime("%c")
-            )
-            end_time_human = (
-                datetime.datetime.fromtimestamp(end_time).strftime("%c")
-            )
+            start_time_human = datetime.datetime.fromtimestamp(
+                start_time
+            ).strftime("%c")
+            end_time_human = datetime.datetime.fromtimestamp(
+                end_time
+            ).strftime("%c")
             total_time = round(item.total_time, 2)
             info_str = (
                 f"\npid: {pid} started at {start_time_human}"
@@ -204,6 +210,7 @@ class CLILineCreator:
         return output_string
 
     def summary(self) -> str:
+
         return (
             self._average()
             + "\n"
