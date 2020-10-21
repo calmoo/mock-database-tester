@@ -136,10 +136,10 @@ class CLILineCreator:
     """
 
     def __init__(self, metrics: Metrics):
-        self._metrics_calculator = metrics
+        self._metrics = metrics
 
     def _execution_info_each_thread(self) -> str:
-        execution_info = self._metrics_calculator.execution_info
+        execution_info = self._metrics.execution_info
         output_string = ""
         for item in execution_info:
             pid = item.pid
@@ -161,7 +161,7 @@ class CLILineCreator:
         return output_string
 
     def summary(self) -> str:
-        metrics = self._metrics_calculator
+        metrics = self._metrics
         average_throughput_rounded = round(metrics.average_throughput, 2)
         average_latency_rounded = round(metrics.average_latency, 2)
         total_summary = textwrap.dedent(
