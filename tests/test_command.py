@@ -60,8 +60,8 @@ class TestCalculateMetrics:
             latency_metrics=latency_metrics,
             execution_metrics=execution_metrics,
         )
-        assert metrics.average_throughput() == expected_throughput_average
-        assert metrics.average_latency() == expected_latency_average
+        assert metrics.average_throughput == expected_throughput_average
+        assert metrics.average_latency == expected_latency_average
 
     def test_max(self) -> None:
         """
@@ -77,8 +77,8 @@ class TestCalculateMetrics:
             latency_metrics=latency_metrics,
             execution_metrics=execution_metrics,
         )
-        assert metrics.max_throughput() == expected_throughput_max
-        assert metrics.max_latency() == expected_latency_max
+        assert metrics.max_throughput == expected_throughput_max
+        assert metrics.max_latency == expected_latency_max
 
     def test_min(self) -> None:
         """
@@ -94,8 +94,8 @@ class TestCalculateMetrics:
             latency_metrics=latency_metrics,
             execution_metrics=execution_metrics,
         )
-        assert metrics.min_throughput() == expected_throughput_min
-        assert metrics.min_latency() == expected_latency_min
+        assert metrics.min_throughput == expected_throughput_min
+        assert metrics.min_latency == expected_latency_min
 
     def test_percentile_valid(self) -> None:
         """
@@ -112,10 +112,10 @@ class TestCalculateMetrics:
             execution_metrics=execution_metrics,
         )
         assert (
-            metrics.ninety_fifth_percentile_throughput()
+            metrics.ninety_fifth_percentile_throughput
             == expected_throughput_percentile
         )
-        assert metrics.ninety_fifth_percentile_latency() == (
+        assert metrics.ninety_fifth_percentile_latency == (
             expected_latency_percentile
         )
 
@@ -138,7 +138,7 @@ class TestCalculateMetrics:
             latency_metrics=latency_metrics,
             execution_metrics=execution_metrics,
         )
-        assert metrics.number_of_threads_run() == 1
+        assert metrics.number_of_threads_run == 1
 
 
 class TestCLILineCreator:

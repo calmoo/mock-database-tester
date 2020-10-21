@@ -90,49 +90,20 @@ class MetricsCalculator:
         latency_metrics: List[int],
         execution_metrics: List[Dict],
     ):
-        self.throughput_metrics = throughput_metrics
-        self.latency_metrics = latency_metrics
-        self.execution_metrics = execution_metrics
-
-    def average_throughput(self) -> float:
-
-        throughput_average = mean(self.throughput_metrics)
-        return throughput_average
-
-    def average_latency(self) -> float:
-        latency_average = mean(self.latency_metrics)
-        return latency_average
-
-    def max_throughput(self) -> float:
-        throughput_max = max(self.throughput_metrics)
-        return throughput_max
-
-    def max_latency(self) -> float:
-        latency_max = max(self.latency_metrics)
-        return latency_max
-
-    def min_throughput(self) -> float:
-        throughput_min = min(self.throughput_metrics)
-        return throughput_min
-
-    def min_latency(self) -> float:
-        latency_min = min(self.latency_metrics)
-        return latency_min
-
-    def ninety_fifth_percentile_throughput(self) -> float:
-        percentile_throughput = quantiles(self.throughput_metrics, n=20)[-1]
-        return percentile_throughput
-
-    def ninety_fifth_percentile_latency(self) -> float:
-        percentile_latency = quantiles(self.latency_metrics, n=20)[-1]
-        return percentile_latency
-
-    def number_of_threads_run(self) -> int:
-        number_threads = len(self.execution_metrics)
-        return number_threads
-
-    def execution_info(self) -> List[Dict]:
-        return self.execution_metrics
+        self.average_throughput = mean(throughput_metrics)
+        self.average_latency = mean(latency_metrics)
+        self.max_throughput = max(throughput_metrics)
+        self.max_latency = max(latency_metrics)
+        self.min_throughput = min(throughput_metrics)
+        self.min_latency = min(latency_metrics)
+        self.ninety_fifth_percentile_throughput = (
+            quantiles(throughput_metrics, n=20)[-1]
+        )
+        self.ninety_fifth_percentile_latency = (
+            quantiles(latency_metrics, n=20)[-1]
+        )
+        self.number_of_threads_run = len(execution_metrics)
+        self.execution_info = execution_metrics
 
 
 class CLILineCreator:
@@ -156,8 +127,8 @@ class CLILineCreator:
         self.execution_metrics = execution_metrics
 
     def _average(self) -> str:
-        average_throughput = self._metrics_calculator.average_throughput()
-        average_latency = self._metrics_calculator.average_latency()
+        average_throughput = self._metrics_calculator.average_throughput
+        average_latency = self._metrics_calculator.average_latency
         average_throughput_rounded = round(average_throughput, 2)
         average_latency_rounded = round(average_latency, 2)
         output_string = (
@@ -169,8 +140,8 @@ class CLILineCreator:
         return output_string
 
     def _max(self) -> str:
-        max_throughput = self._metrics_calculator.max_throughput()
-        max_latency = self._metrics_calculator.max_latency()
+        max_throughput = self._metrics_calculator.max_throughput
+        max_latency = self._metrics_calculator.max_latency
         output_string = (
             f"Max throughput = "
             f"{max_throughput} ops/s\n"
@@ -179,8 +150,8 @@ class CLILineCreator:
         return output_string
 
     def _min(self) -> str:
-        min_throughput = self._metrics_calculator.min_throughput()
-        min_latency = self._metrics_calculator.min_latency()
+        min_throughput = self._metrics_calculator.min_throughput
+        min_latency = self._metrics_calculator.min_latency
         output_string = (
             f"Min throughput = "
             f"{min_throughput} ops/s\n"
@@ -192,11 +163,11 @@ class CLILineCreator:
     def _percentile(self) -> str:
 
         percentile_throughput = (
-            self._metrics_calculator.ninety_fifth_percentile_throughput()
+            self._metrics_calculator.ninety_fifth_percentile_throughput
         )
 
         percentile_latency = (
-            self._metrics_calculator.ninety_fifth_percentile_latency()
+            self._metrics_calculator.ninety_fifth_percentile_latency
         )
         output_string = (
             f"Throughput 95th percentile = "
@@ -207,12 +178,12 @@ class CLILineCreator:
         return output_string
 
     def _no_threads_run(self) -> str:
-        num_threads = self._metrics_calculator.number_of_threads_run()
+        num_threads = self._metrics_calculator.number_of_threads_run
         output_string = f"{num_threads} threads run in total"
         return output_string
 
     def _execution_info_each_thread(self) -> str:
-        execution_info = self._metrics_calculator.execution_info()
+        execution_info = self._metrics_calculator.execution_info
         output_string = ""
         for item in execution_info:
             pid = item["pid"]
