@@ -10,6 +10,14 @@ from threading import Thread
 from typing import Dict, List
 
 
+class ProcessStats:
+    def __init__(self, pid: int, start_time: float, end_time: float, total_time: float):
+        self.pid = pid
+        self.start_time = start_time
+        self.end_time = end_time
+        self.total_time = total_time
+
+
 class StressTest:
     def _stress_test(self, duration: int, shared_dict: dict) -> None:
         """
@@ -37,12 +45,13 @@ class StressTest:
         end_time = time.time()
         end_time_monotonic = time.monotonic()
         total_time = end_time_monotonic - start_time_monotonic
-        process_stats = {
-            "pid": stress_test_process.pid,
-            "start_time": start_time,
-            "end_time": end_time,
-            "total_time": total_time,
-        }
+        pid = stress_test_process.pid
+        process_stats = ProcessStats(
+            pid=pid,
+            start_time=start_time,
+            end_time=end_time,
+            total_time=total_time,
+        )
         shared_dict["throughput"].extend(throughput_values_int)
         shared_dict["latency"].extend(latency_values_int)
         shared_dict["execution_stats"].append(process_stats)
@@ -88,7 +97,7 @@ class Metrics:
         self,
         throughput_metrics: List[int],
         latency_metrics: List[int],
-        execution_metrics: List[Dict],
+        execution_metrics: List[ProcessStats],
     ):
         self.average_throughput = mean(throughput_metrics)
         self.average_latency = mean(latency_metrics)
@@ -176,16 +185,16 @@ class CLILineCreator:
         execution_info = self._metrics_calculator.execution_info
         output_string = ""
         for item in execution_info:
-            pid = item["pid"]
-            start_time = item["start_time"]
-            end_time = item["end_time"]
+            pid = item.pid
+            start_time = item.start_time
+            end_time = item.end_time
             start_time_human = (
                 datetime.datetime.fromtimestamp(start_time).strftime("%c")
             )
             end_time_human = (
                 datetime.datetime.fromtimestamp(end_time).strftime("%c")
             )
-            total_time = round(item["total_time"], 2)
+            total_time = round(item.total_time, 2)
             info_str = (
                 f"\npid: {pid} started at {start_time_human}"
                 f" and finished at {end_time_human}"

@@ -8,7 +8,7 @@ from typing import List
 
 import pytest
 
-from analyze import CLILineCreator, Metrics, StressTest
+from analyze import CLILineCreator, Metrics, StressTest, ProcessStats
 from stress import simulate_stress
 
 
@@ -123,13 +123,14 @@ class TestCalculateMetrics:
         """
         throughput_metrics = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         latency_metrics = [0, 2, 3, 4, 5, 6, 7, 8, 9, 11]
+
         execution_metrics = [
-            {
-                "pid": 80819,
-                "start_time": "Sun Oct 18 17:43:41 2020",
-                "end_time": "Sun Oct 18 17:43:42 2020",
-                "total_time": 1.065514607,
-            }
+            ProcessStats(
+                pid=80819,
+                start_time=1,
+                end_time=2,
+                total_time=1,
+            )
         ]
         metrics = Metrics(
             throughput_metrics=throughput_metrics,
@@ -150,12 +151,12 @@ class TestCLILineCreator:
         throughput_metrics = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         latency_metrics = [0, 2, 3, 4, 5, 6, 7, 8, 9, 11]
         execution_metrics = [
-            {
-                "pid": 80819,
-                "start_time": "Sun Oct 18 17:43:41 2020",
-                "end_time": "Sun Oct 18 17:43:42 2020",
-                "total_time": 1.065514607,
-            }
+            ProcessStats(
+                pid=80819,
+                start_time=1,
+                end_time=2,
+                total_time=1,
+            )
         ]
         metrics = Metrics(
             throughput_metrics=throughput_metrics,
@@ -191,7 +192,7 @@ class TestRunThreadsInParallel:
         execution_metrics = metrics.execution_info
         times = []
         for item in execution_metrics:
-            total_time = item["total_time"]
+            total_time = item.total_time
             times.append(total_time)
         actual_longest_time = max(times)
         lower_bound = number_threads
