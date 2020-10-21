@@ -1,9 +1,9 @@
-import sys
-import time
-import random
 import argparse
 import csv
-from typing import Iterable, Dict
+import random
+import sys
+import time
+from typing import Dict, Iterable
 
 
 def simulate_stress(stress_duration: int) -> Iterable[Dict[str, int]]:

@@ -1,13 +1,14 @@
-import subprocess
-from threading import Thread
-import random
-import time
-import datetime
 import argparse
-from statistics import quantiles, mean
-from typing import Callable, Dict, List
 import csv
+import datetime
 import io
+import random
+import subprocess
+import time
+from statistics import mean, quantiles
+from threading import Thread
+from typing import Dict, List
+
 
 class StressTest:
     def _stress_test(self, duration: int, shared_dict: dict) -> None:

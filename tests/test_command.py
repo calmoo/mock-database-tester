@@ -2,16 +2,14 @@
 Tests for stress tester
 """
 
-import pytest
-from stress import simulate_stress
-from analyze import (
-    Metrics,
-    CLILineCreator,
-    StressTest,
-)
 import time
-from typing import List
 from pathlib import Path
+from typing import List
+
+import pytest
+
+from analyze import CLILineCreator, Metrics, StressTest
+from stress import simulate_stress
 
 
 class TestStressProcess:
