@@ -4,6 +4,7 @@ import datetime
 import io
 import random
 import subprocess
+import textwrap
 import time
 from statistics import mean, quantiles
 from threading import Thread
@@ -11,6 +12,12 @@ from typing import Dict, List
 
 
 class ProcessStats:
+    """
+    Details of a process.
+
+    Total time is separate from start time and end time because there could be
+    system clock changes while running the process.
+    """
     def __init__(
         self, pid: int, start_time: float, end_time: float, total_time: float
     ):
@@ -131,62 +138,6 @@ class CLILineCreator:
     def __init__(self, metrics: Metrics):
         self._metrics_calculator = metrics
 
-    def _average(self) -> str:
-        average_throughput = self._metrics_calculator.average_throughput
-        average_latency = self._metrics_calculator.average_latency
-        average_throughput_rounded = round(average_throughput, 2)
-        average_latency_rounded = round(average_latency, 2)
-        output_string = (
-            f"Average Throughput = "
-            f"{average_throughput_rounded} ops/s\n"
-            f"Average Latency = "
-            f"{average_latency_rounded}ms"
-        )
-        return output_string
-
-    def _max(self) -> str:
-        max_throughput = self._metrics_calculator.max_throughput
-        max_latency = self._metrics_calculator.max_latency
-        output_string = (
-            f"Max Throughput = "
-            f"{max_throughput} ops/s\n"
-            f"Max Latency = {max_latency}ms"
-        )
-        return output_string
-
-    def _min(self) -> str:
-        min_throughput = self._metrics_calculator.min_throughput
-        min_latency = self._metrics_calculator.min_latency
-        output_string = (
-            f"Min Throughput = "
-            f"{min_throughput} ops/s\n"
-            f"Min Latency = "
-            f"{min_latency}ms"
-        )
-        return output_string
-
-    def _percentile(self) -> str:
-
-        percentile_throughput = (
-            self._metrics_calculator.ninety_fifth_percentile_throughput
-        )
-
-        percentile_latency = (
-            self._metrics_calculator.ninety_fifth_percentile_latency
-        )
-        output_string = (
-            f"Throughput 95th percentile = "
-            f"{percentile_throughput} ops/s\n"
-            f"Latency 95th percentile = "
-            f"{percentile_latency}ms"
-        )
-        return output_string
-
-    def _no_threads_run(self) -> str:
-        num_threads = self._metrics_calculator.number_of_threads_run
-        output_string = f"Total threads run = {num_threads}"
-        return output_string
-
     def _execution_info_each_thread(self) -> str:
         execution_info = self._metrics_calculator.execution_info
         output_string = ""
@@ -210,19 +161,23 @@ class CLILineCreator:
         return output_string
 
     def summary(self) -> str:
-
-        return (
-            self._average()
-            + "\n"
-            + self._max()
-            + "\n"
-            + self._min()
-            + "\n"
-            + self._percentile()
-            + "\n"
-            + self._no_threads_run()
-            + self._execution_info_each_thread()
+        metrics = self._metrics_calculator
+        average_throughput_rounded = round(metrics.average_throughput, 2)
+        average_latency_rounded = round(metrics.average_latency, 2)
+        total_summary = textwrap.dedent(
+            f"""\
+            Average Throughput (ops/s) = {average_throughput_rounded}
+            Average Latency (ms) = {average_latency_rounded}
+            Max Throughput (ops/s) = {metrics.max_throughput}
+            Max Latency (ms) = {metrics.max_latency}
+            Min Throughput (ops/s) = {metrics.min_throughput}
+            Min Latency (ms) = {metrics.min_latency}
+            Throughput 95th percentile (ops/s) = {metrics.ninety_fifth_percentile_throughput}
+            Latency 95th percentile (ms) = {metrics.ninety_fifth_percentile_latency}
+            Total threads run = {metrics.number_of_threads_run}
+            """  # noqa: E501
         )
+        return total_summary + self._execution_info_each_thread()
 
 
 if __name__ == "__main__":  # pragma: no cover

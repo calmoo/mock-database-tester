@@ -1,10 +1,11 @@
-Average Throughput = 5.5 ops/s
-Average Latency = 5.5ms
-Max Throughput = 10 ops/s
-Max Latency = 11ms
-Min Throughput = 1 ops/s
-Min Latency = 0ms
-Throughput 95th percentile = 10.45 ops/s
-Latency 95th percentile = 11.9ms
+Average Throughput (ops/s) = 5.5
+Average Latency (ms) = 5.5
+Max Throughput (ops/s) = 10
+Max Latency (ms) = 11
+Min Throughput (ops/s) = 1
+Min Latency (ms) = 0
+Throughput 95th percentile (ops/s) = 10.45
+Latency 95th percentile (ms) = 11.9
 Total threads run = 1
+
 pid: 80819 started at Thu Jan  1 01:00:01 1970 and finished at Thu Jan  1 01:00:02 1970 taking 1 seconds to complete
