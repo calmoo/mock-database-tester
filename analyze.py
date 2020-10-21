@@ -1,21 +1,21 @@
 import subprocess
-from multiprocessing import Process, Manager
+from threading import Thread
 import random
 import time
 import datetime
 import argparse
 from statistics import quantiles, mean
-from typing import Callable, Dict, List, Union
+from typing import Callable, Dict, List
 import csv
 import io
 
 
 def stress_test(duration: int, shared_dict: dict) -> None:
     """
-    This creates a process which runs ``stress.py``.
-    It runs this process for ``duration`` seconds.
+    This creates a thread which runs ``stress.py``.
+    It runs this thread for ``duration`` seconds.
 
-    It captures the standard output of this process and stores data from
+    It captures the standard output of this thread and stores data from
     this in the given ``shared_dict``.
     """
     start_time = time.time()
@@ -48,38 +48,39 @@ def stress_test(duration: int, shared_dict: dict) -> None:
     shared_dict["execution_stats"].append(process_stats)
 
 
-def run_processes_in_parallel(
+def run_threads_in_parallel(
     function: Callable[[int, dict], None],
     num_threads: int,
 ) -> Dict:
     """
     Runs the given ``function`` in ``num_threads`` threads.
 
-    Each process is given a unique duration which is between 1 and the given
+    Each thread is given a unique duration which is between 1 and the given
     ``num_threads``.
 
-    A shared dictionary is used amongst all spawned processes.
+    A shared dictionary is used amongst all spawned threads.
     """
-    manager = Manager()
-    shared_dict = manager.dict()  # type: ignore
-    shared_dict["throughput"] = manager.list()
-    shared_dict["latency"] = manager.list()
-    shared_dict["execution_stats"] = manager.list()
-    processes = []
+    shared_dict: Dict[str, List] = {
+        "throughput": [],
+        "latency": [],
+        "execution_stats": [],
+    }
+    threads = []
     duration_list = random.sample(range(2, num_threads + 2), num_threads)
     for duration in duration_list:
-        process = Process(target=function, args=(duration, shared_dict))
-        process.start()
-        processes.append(process)
-    for process in processes:
-        process.join()
+        thread = Thread(target=function, args=(duration, shared_dict))
+        thread.start()
+        threads.append(thread)
+    for thread in threads:
+        thread.join()
+
     return shared_dict
 
 
 class MetricsCalculator:
     """
     This class takes all of the simulated values and execution metrics
-    from all of the processes run, and calculates various statistics based
+    from all of the threads run, and calculates various statistics based
     on those values.
     """
 
@@ -96,13 +97,11 @@ class MetricsCalculator:
     def average_throughput(self) -> float:
 
         throughput_average = mean(self.throughput_metrics)
-        throughput_average_rounded = round(throughput_average, 2)
-        return throughput_average_rounded
+        return throughput_average
 
     def average_latency(self) -> float:
         latency_average = mean(self.latency_metrics)
-        throughput_average_rounded = round(latency_average, 2)
-        return throughput_average_rounded
+        return latency_average
 
     def max_throughput(self) -> float:
         throughput_max = max(self.throughput_metrics)
@@ -120,17 +119,17 @@ class MetricsCalculator:
         latency_min = min(self.latency_metrics)
         return latency_min
 
-    def ninety_fifth_percentile_throughput(self) -> Union[float, bool]:
+    def ninety_fifth_percentile_throughput(self) -> float:
         percentile_throughput = quantiles(self.throughput_metrics, n=20)[-1]
         return percentile_throughput
 
-    def ninety_fifth_percentile_latency(self) -> Union[float, bool]:
+    def ninety_fifth_percentile_latency(self) -> float:
         percentile_latency = quantiles(self.latency_metrics, n=20)[-1]
         return percentile_latency
 
-    def number_of_processes_run(self) -> int:
-        number_processes = len(self.execution_metrics)
-        return number_processes
+    def number_of_threads_run(self) -> int:
+        number_threads = len(self.execution_metrics)
+        return number_threads
 
     def execution_info(self) -> List[Dict]:
         return self.execution_metrics
@@ -159,11 +158,13 @@ class CLILineCreator:
     def _average(self) -> str:
         average_throughput = self._metrics_calculator.average_throughput()
         average_latency = self._metrics_calculator.average_latency()
+        average_throughput_rounded = round(average_throughput, 2)
+        average_latency_rounded = round(average_latency, 2)
         output_string = (
             f"Average Throughput = "
-            f"{average_throughput} ops/s\n"
+            f"{average_throughput_rounded} ops/s\n"
             f"Average Latency = "
-            f"{average_latency}ms"
+            f"{average_latency_rounded}ms"
         )
         return output_string
 
@@ -205,12 +206,12 @@ class CLILineCreator:
         )
         return output_string
 
-    def _no_processes_run(self) -> str:
-        num_processes = self._metrics_calculator.number_of_processes_run()
-        output_string = f"{num_processes} processes run in total"
+    def _no_threads_run(self) -> str:
+        num_threads = self._metrics_calculator.number_of_threads_run()
+        output_string = f"{num_threads} threads run in total"
         return output_string
 
-    def _execution_info_each_process(self) -> str:
+    def _execution_info_each_thread(self) -> str:
         execution_info = self._metrics_calculator.execution_info()
         output_string = ""
         for item in execution_info:
@@ -236,23 +237,23 @@ class CLILineCreator:
             + "\n"
             + self._percentile()
             + "\n"
-            + self._no_processes_run()
-            + self._execution_info_each_process()
+            + self._no_threads_run()
+            + self._execution_info_each_thread()
         )
 
 
 if __name__ == "__main__":  # pragma: no cover
 
     """
-    We use argparse to spawn N number of processes. An error is returned
+    We use argparse to spawn N number of threads. An error is returned
     if an argument of 0 is used.
     """
     parser = argparse.ArgumentParser(
-        description="Spawn stress processes for ScyllaDB and get metrics"
+        description="Spawn stress threads for ScyllaDB and get metrics"
     )
     parser.add_argument(
         "threads",
-        help="Number of processes to spawn (integer)",
+        help="Number of threads to spawn (integer)",
         type=int,
     )
 
@@ -261,7 +262,7 @@ if __name__ == "__main__":  # pragma: no cover
     if args.threads < 1:
         parser.error("Number of threads must be greater than 0")
 
-    output_data = run_processes_in_parallel(
+    output_data = run_threads_in_parallel(
         function=stress_test,
         num_threads=args.threads,
     )
