@@ -3,6 +3,8 @@ This is a mock database tester and CLI program that runs a thread which generate
 values for a set duration of seconds, while also running these threads in parallel. A summary of these threads is
 printed after execution has completed.
 
+Tested on Python 3.8.
+
 ## Usage
 The number of threads to spawn is passed as an integer when running the program. This value must be larger than 0.
 
@@ -13,19 +15,22 @@ python analyze.py 3
 ```
 
 Sample output:
+
 ```
-Average Throughput = 38587.89 ops/s
-Average Latency = 9331.78ms
-Max throughput = 87622 ops/s
-Max latency = 17266ms
-Min throughput = 747 ops/s
-Min latency = 304ms
-Throughput 95th percentile = 90609.5 ops/s
-Latency 95th percentile = 18183.0ms
-3 threads run in total
-pid: 26849 started at Tue Oct 20 17:57:52 2020 and finished at Tue Oct 20 17:57:54 2020 taking  2.09 seconds to complete
-pid: 26847 started at Tue Oct 20 17:57:52 2020 and finished at Tue Oct 20 17:57:55 2020 taking  3.09 seconds to complete
-pid: 26848 started at Tue Oct 20 17:57:52 2020 and finished at Tue Oct 20 17:57:56 2020 taking  4.09 seconds to complete
+Average Throughput (ops/s) = 43837.33
+Average Latency (ms) = 11324.67
+Max Throughput (ops/s) = 91320
+Max Latency (ms) = 17923
+Min Throughput (ops/s) = 1903
+Min Latency (ms) = 2431
+Throughput 95th percentile (ops/s) = 94027.5
+Latency 95th percentile (ms) = 17973.0
+Total threads run = 3
+
+pid: 47789 started at Wed Oct 21 12:17:14 2020 and finished at Wed Oct 21 12:17:16 2020 taking 2.12 seconds to complete
+pid: 47790 started at Wed Oct 21 12:17:14 2020 and finished at Wed Oct 21 12:17:17 2020 taking 3.13 seconds to complete
+pid: 47791 started at Wed Oct 21 12:17:14 2020 and finished at Wed Oct 21 12:17:18 2020 taking 4.13 seconds to complete
+
 ```
 The stress.py program can also be run independently with no analysis,
 the duration of the thread is passed as an argument:
@@ -42,13 +47,17 @@ Throughput (ops/s),Latency (ms)
 16316,6240
 ```
 
-
-
-
 ## How to run the tests:
-Tested on Python 3.8. The tests 
+
+Install test requirements:
+
 ```
 pip install -r dev-requirements.txt
+```
+
+Run tests:
+
+```
 pytest
 ```
 
@@ -65,6 +74,7 @@ output to simplify output parsing and to reduce any future parsing errors.
 - The summary values are rounded to two decimal places for readability.
 
 - The tests are comprehensive and have thorough coverage. The code is fully typed with mypy and linted with flake8:
+
 ```
 pytest --cov-fail-under 100 --cov tests/ --cov analyze --cov stress
 flake8 .
