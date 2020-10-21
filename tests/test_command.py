@@ -5,13 +5,13 @@ Tests for stress tester
 import pytest
 from stress import simulate_stress
 from analyze import (
-    MetricsCalculator,
+    Metrics,
     CLILineCreator,
-    run_threads_in_parallel,
-    stress_test,
+    StressTest,
 )
 import time
-from typing import List, Dict
+from typing import List
+from pathlib import Path
 
 
 class TestStressProcess:
@@ -55,7 +55,7 @@ class TestCalculateMetrics:
         execution_metrics: List = []
         expected_throughput_average = 5.5
         expected_latency_average = 5.6
-        metrics = MetricsCalculator(
+        metrics = Metrics(
             throughput_metrics=throughput_metrics,
             latency_metrics=latency_metrics,
             execution_metrics=execution_metrics,
@@ -72,7 +72,7 @@ class TestCalculateMetrics:
         execution_metrics: List = []
         expected_throughput_max = 10
         expected_latency_max = 11
-        metrics = MetricsCalculator(
+        metrics = Metrics(
             throughput_metrics=throughput_metrics,
             latency_metrics=latency_metrics,
             execution_metrics=execution_metrics,
@@ -89,7 +89,7 @@ class TestCalculateMetrics:
         execution_metrics: List = []
         expected_throughput_min = 1
         expected_latency_min = 0
-        metrics = MetricsCalculator(
+        metrics = Metrics(
             throughput_metrics=throughput_metrics,
             latency_metrics=latency_metrics,
             execution_metrics=execution_metrics,
@@ -106,7 +106,7 @@ class TestCalculateMetrics:
         execution_metrics: List = []
         expected_throughput_percentile = 10.45
         expected_latency_percentile = 11.9
-        metrics = MetricsCalculator(
+        metrics = Metrics(
             throughput_metrics=throughput_metrics,
             latency_metrics=latency_metrics,
             execution_metrics=execution_metrics,
@@ -133,7 +133,7 @@ class TestCalculateMetrics:
                 "total_time": 1.065514607,
             }
         ]
-        metrics = MetricsCalculator(
+        metrics = Metrics(
             throughput_metrics=throughput_metrics,
             latency_metrics=latency_metrics,
             execution_metrics=execution_metrics,
@@ -159,44 +159,26 @@ class TestCLILineCreator:
                 "total_time": 1.065514607,
             }
         ]
-        line_creator = CLILineCreator(
+        metrics = Metrics(
             throughput_metrics=throughput_metrics,
             latency_metrics=latency_metrics,
             execution_metrics=execution_metrics,
         )
-
-        from pathlib import Path
-
+        line_creator = CLILineCreator(metrics=metrics)
         expected_contents_file = Path(__file__).parent / "expected_summary.txt"
         expected_contents = expected_contents_file.read_text()
         assert expected_contents == line_creator.summary()
 
 
 class TestRunThreadsInParallel:
-    @pytest.mark.parametrize("number_threads", [0, 1, 2, 3, 4, 5])
-    def test_output_data_valid(self, number_threads: int) -> None:
+    @pytest.mark.parametrize("number_threads", [1, 2, 3, 4, 5])
+    def test_thread_data_recorded(self, number_threads: int) -> None:
         """
-        The number of simulated values and range of values should be accurate
-        when run in parallel.
+        Details of each thread is returned.
         """
-        output_data = run_threads_in_parallel(
-            function=stress_test,
-            num_threads=number_threads,
-        )
-
-        throughput = list(output_data["throughput"])
-        latency = list(output_data["latency"])
-        expected_length = sum(range(2, number_threads + 2))
-        actual_throughput_length = len(throughput)
-        actual_latency_length = len(latency)
-        assert actual_throughput_length == expected_length
-        assert actual_latency_length == expected_length
-
-        for value in throughput:
-            assert 0 <= value < 100000
-
-        for value in latency:
-            assert 0 <= value < 20000
+        stress_test = StressTest()
+        metrics = stress_test.run(num_threads=number_threads)
+        assert len(metrics.execution_info) == number_threads
 
     @pytest.mark.parametrize("number_threads", [1, 2, 3, 4, 5])
     def test_timing(self, number_threads: int) -> None:
@@ -206,11 +188,9 @@ class TestRunThreadsInParallel:
         a larger number of threads. 1 is added to the tolerance, as the minimum
         execution time is always at least 2 seconds.
         """
-        output_data = run_threads_in_parallel(
-            function=stress_test,
-            num_threads=number_threads,
-        )
-        execution_metrics = list(output_data["execution_stats"])
+        stress_test = StressTest()
+        metrics = stress_test.run(num_threads=number_threads)
+        execution_metrics = metrics.execution_info
         times = []
         for item in execution_metrics:
             total_time = item["total_time"]
@@ -219,18 +199,3 @@ class TestRunThreadsInParallel:
         lower_bound = number_threads
         upper_bound = number_threads + 1.5
         assert lower_bound < actual_longest_time < upper_bound
-
-
-class TestStressTestCaller:
-    """
-    The stress_test caller function should mutate the lists in the dictionary
-    correctly.
-    """
-
-    def test_dict_results(self) -> None:
-        dict_input: Dict = {
-            "throughput": [], "latency": [], "execution_stats": []
-        }
-        stress_test(duration=1, shared_dict=dict_input)
-        for key in dict_input:
-            assert len(dict_input[key]) == 1
