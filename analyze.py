@@ -267,9 +267,9 @@ if __name__ == "__main__":  # pragma: no cover
         num_threads=args.threads,
     )
 
-    throughput = list(output_data["throughput"])
-    latency = list(output_data["latency"])
-    execution_metrics = list(output_data["execution_stats"])
+    throughput = output_data["throughput"]
+    latency = output_data["latency"]
+    execution_metrics = output_data["execution_stats"]
 
     line_creator = CLILineCreator(
         throughput_metrics=throughput,
