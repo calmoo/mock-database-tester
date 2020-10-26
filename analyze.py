@@ -152,10 +152,13 @@ class CLILineCreator:
                 end_time
             ).strftime("%c")
             total_time = round(item.total_time, 2)
+            plural_second = ""
+            if total_time != 1:
+                plural_second = "s"
             info_str = (
                 f"\npid: {pid} started at {start_time_human} (UTC)"
                 f" and finished at {end_time_human} (UTC)"
-                f" taking {total_time} seconds to complete"
+                f" taking {total_time} second{plural_second} to complete"
             )
             output_string += info_str
         return output_string
