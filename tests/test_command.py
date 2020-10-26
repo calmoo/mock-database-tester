@@ -141,7 +141,7 @@ class TestCalculateMetrics:
 
 
 class TestCLILineCreator:
-    def test_summary(self) -> None:
+    def test_summary_single_second(self) -> None:
         """
         The summary of all threads should be printed accurately.
         For cleanliness and avoiding formatting headaches, a manually verified
@@ -156,7 +156,13 @@ class TestCLILineCreator:
                 start_time=1,
                 end_time=2,
                 total_time=1,
-            )
+            ),
+            ProcessStats(
+                pid=80818,
+                start_time=1,
+                end_time=3,
+                total_time=2,
+            ),
         ]
         metrics = Metrics(
             throughput_metrics=throughput_metrics,
