@@ -27,9 +27,9 @@ Throughput 95th percentile (ops/s) = 94027.5
 Latency 95th percentile (ms) = 17973.0
 Total threads run = 3
 
-pid: 47789 started at Wed Oct 21 12:17:14 2020 and finished at Wed Oct 21 12:17:16 2020 taking 2.12 seconds to complete
-pid: 47790 started at Wed Oct 21 12:17:14 2020 and finished at Wed Oct 21 12:17:17 2020 taking 3.13 seconds to complete
-pid: 47791 started at Wed Oct 21 12:17:14 2020 and finished at Wed Oct 21 12:17:18 2020 taking 4.13 seconds to complete
+pid: 47789 started at Wed Oct 21 12:17:14 2020 (UTC) and finished at Wed Oct 21 12:17:16 2020 (UTC) taking 2.12 seconds to complete
+pid: 47790 started at Wed Oct 21 12:17:14 2020 (UTC) and finished at Wed Oct 21 12:17:17 2020 (UTC) taking 3.13 seconds to complete
+pid: 47791 started at Wed Oct 21 12:17:14 2020 (UTC) and finished at Wed Oct 21 12:17:18 2020 (UTC) taking 4.13 seconds to complete
 
 ```
 The stress.py program can also be run independently with no analysis,
