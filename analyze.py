@@ -145,16 +145,16 @@ class CLILineCreator:
             pid = item.pid
             start_time = item.start_time
             end_time = item.end_time
-            start_time_human = datetime.datetime.fromtimestamp(
+            start_time_human = datetime.datetime.utcfromtimestamp(
                 start_time
             ).strftime("%c")
-            end_time_human = datetime.datetime.fromtimestamp(
+            end_time_human = datetime.datetime.utcfromtimestamp(
                 end_time
             ).strftime("%c")
             total_time = round(item.total_time, 2)
             info_str = (
-                f"\npid: {pid} started at {start_time_human}"
-                f" and finished at {end_time_human}"
+                f"\npid: {pid} started at {start_time_human} (UTC)"
+                f" and finished at {end_time_human} (UTC)"
                 f" taking {total_time} seconds to complete"
             )
             output_string += info_str

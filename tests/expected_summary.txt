@@ -8,4 +8,4 @@ Throughput 95th percentile (ops/s) = 10.45
 Latency 95th percentile (ms) = 11.9
 Total threads run = 1
 
-pid: 80819 started at Thu Jan  1 01:00:01 1970 and finished at Thu Jan  1 01:00:02 1970 taking 1 seconds to complete
+pid: 80819 started at Thu Jan  1 00:00:01 1970 (UTC) and finished at Thu Jan  1 00:00:02 1970 (UTC) taking 1 seconds to complete
