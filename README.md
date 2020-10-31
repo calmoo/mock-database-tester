@@ -1,4 +1,4 @@
-# ScyllaDB Stress simulation
+# Database Stress simulation
 This is a mock database tester and CLI program that runs a thread which generates random latency and throughput
 values for a set duration of seconds, while also running these threads in parallel. A summary of these threads is
 printed after execution has completed.
@@ -62,9 +62,6 @@ pytest
 ```
 
 ## Decisions made:
-
-- I included list comprehension and a generator in the code as I wanted to become more familiar with them after 
-our initial interview.
 
 - Apart from pytest, all imports are standard libraries for improved maintainability and less overhead.
 
